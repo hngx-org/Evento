@@ -41,8 +41,6 @@ function authToken(req: Request, res: Response, next: NextFunction) {
 }
 
 const generateToken = (userId: string): string => {
-  const secretKey = process.env.JWT_SECRET || "yourFallbackSecretKey";
-
   const payload = {
     userId: userId,
   };
