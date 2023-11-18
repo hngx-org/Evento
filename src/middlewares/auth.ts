@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import generateSecretKey from "../services/generateSecretKey";
 import {
   CustomError,
   UnauthorizedError,
@@ -7,7 +8,13 @@ import {
   errorHandler,
 } from "./index"; // Replace with the correct path
 
-const secretKey = process.env.JWT_SECRET || "yourFallbackSecretKey"; // Use the fallback key if environment variable is not set
+require("dotenv").config();
+
+// Check if JWT_SECRET environment variable exists
+const jwtSecret = process.env.JWT_SECRET;
+
+// check commandline for Secret Key and add to environment variable
+const secretKey = jwtSecret || generateSecretKey();
 
 function authToken(req: Request, res: Response, next: NextFunction) {
   const token = req.header("Authorization");
