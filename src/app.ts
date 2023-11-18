@@ -1,6 +1,7 @@
 import express from "express";
 import { readdirSync } from "fs";
 import { sayHelloController } from "./controllers/index";
+import { authToken } from "./middlewares/index";
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
@@ -11,17 +12,12 @@ const app = express();
 //  Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 
-// connectionSource
-//   .initialize()
-//   .then(async () => {
-//     console.log("Database Connected");
-//   })
-//   .catch((error) => console.log(error));
-
 // middleware setup
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(authToken);
 
 //serve all routes dynamically using readdirsync
 readdirSync("./src/routes").map((path) =>

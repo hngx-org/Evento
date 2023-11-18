@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    userID               String                 @id @unique @default(uuid())
+    username             String                 @unique
+    email                String                 @unique
+    password             String
+    fullName             String
+    bio                  String?
+    socialLinks          String?
+    websiteURL           String?
+    profileImage         String?
+    googleAccountID      String?
+    role                 String
+    Participant          Participant[]
+    Verification         Verification[]
+    SocialLink           SocialLink[]
+    Ticket               Ticket[]
+    PasswordReset        PasswordReset[]
+    Preferences          Preferences[]
+    Security             Security[]
+    Payment              Payment[]
+    UserEventInteraction UserEventInteraction[]
+    PrivacySetting       PrivacySetting[]
+    UserSupportTicket    UserSupportTicket[]
+}
+
+model Event {
+    eventID              String                 @id @unique @default(uuid())
+    title                String
+    description          String?
+    date                 DateTime
+    time                 DateTime
+    location             String
+    capacity             Int
+    entranceFee          Float?
+    eventType            String
+    organizerID          String
+    categoryID           String?
+    participants         Participant[]
+    tickets              Ticket[]
+    locations            Location[]
+    eventAnalytics       EventAnalytics?
+    Payment              Payment[]
+    Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
+    categoryCategoryID   String?
+    UserEventInteraction UserEventInteraction[]
+    PrivacySetting       PrivacySetting[]
+}
+
+model Participant {
+    participantID      String  @id @unique @default(uuid())
+    userID             String
+    eventID            String
+    role               String
+    registrationStatus String?
+    paymentStatus      String?
+    user               User    @relation(fields: [userID], references: [userID])
+    event              Event   @relation(fields: [eventID], references: [eventID])
+}
+
+model Verification {
+    userID           String   @id
+    verificationCode String
+    timestamp        DateTime
+    status           String?
+    user             User     @relation(fields: [userID], references: [userID])
+}
+
+model SocialLink {
+    linkID         String @id @unique @default(uuid())
+    userID         String
+    socialPlatform String
+    linkURL        String
+    user           User   @relation(fields: [userID], references: [userID])
+}
+
+model Ticket {
+    ticketID   String @id @unique @default(uuid())
+    eventID    String
+    userID     String
+    ticketType String
+    price      Float
+    quantity   Int
+    saleStatus String
+    event      Event  @relation(fields: [eventID], references: [eventID])
+    user       User   @relation(fields: [userID], references: [userID])
+}
+
+model Location {
+    locationID String @id @unique @default(uuid())
+    eventID    String
+    venueName  String
+    address    String
+    city       String
+    country    String
+    latitude   Float
+    longitude  Float
+    event      Event  @relation(fields: [eventID], references: [eventID])
+}
+
+model PasswordReset {
+    userID          String   @id
+    resetCode       String
+    expiryTimestamp DateTime
+    status          String
+    user            User     @relation(fields: [userID], references: [userID])
+}
+
+model Preferences {
+    userID                  String  @id
+    notificationPreferences String?
+    language                String?
+    regionalSettings        String?
+    user                    User    @relation(fields: [userID], references: [userID])
+}
+
+model Security {
+    userID                          String  @id
+    twoFactorAuthenticationSettings String?
+    connectedDevices                String?
+    user                            User    @relation(fields: [userID], references: [userID])
+}
+
+model Payment {
+    paymentID       String   @id @unique @default(uuid())
+    userID          String
+    eventID         String
+    amount          Float
+    transactionDate DateTime
+    user            User     @relation(fields: [userID], references: [userID])
+    event           Event    @relation(fields: [eventID], references: [eventID])
+}
+
+model Category {
+    categoryID String  @id @unique @default(uuid())
+    name       String
+    events     Event[]
+}
+
+model UserEventInteraction {
+    interactionID String  @id @unique @default(uuid())
+    userID        String
+    eventID       String
+    like          Boolean
+    comment       String?
+    user          User    @relation(fields: [userID], references: [userID])
+    event         Event   @relation(fields: [eventID], references: [eventID])
+}
+
+model EventAnalytics {
+    analyticsID       String @id @unique @default(uuid())
+    eventID           String @unique
+    participantsCount Int
+    viewsCount        Int
+    revenue           Float
+    event             Event  @relation(fields: [eventID], references: [eventID])
+}
+
+model PrivacySetting {
+    privacySettingID String  @id @unique @default(uuid())
+    userID           String
+    eventID          String
+    isPublic         Boolean
+    user             User    @relation(fields: [userID], references: [userID])
+    event            Event   @relation(fields: [eventID], references: [eventID])
+}
+
+model UserSupportTicket {
+    ticketID         String @id @unique @default(uuid())
+    userID           String
+    issueDescription String
+    status           String
+    user             User   @relation(fields: [userID], references: [userID])
+}

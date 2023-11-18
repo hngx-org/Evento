@@ -1,0 +1,21 @@
+# JWT Secret Key
+
+# This value will be generated automatically on the first run and outputted to the console. You can then copy it here. It is used to sign and verify JSON Web Tokens (JWTs) used for authentication.
+
+JWT_SECRET=
+
+# Port
+
+# Specify the port number on which your server will run. Defaults to 3000.
+
+PORT=
+
+# Database Configuration
+
+# Replace the placeholder values with your actual database connection URL.
+
+# Example for PostgreSQL:
+
+# DATABASE_URL="postgresql://username:password@host:port/database"
+
+DATABASE_URL=""
