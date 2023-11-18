@@ -26,7 +26,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(authToken);
+// app.use(authToken);
 
 //serve all routes dynamically using readdirsync
 readdirSync("./src/routes").map((path) =>
