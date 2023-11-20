@@ -40,7 +40,8 @@ model Event {
     eventID              String                 @id @unique @default(uuid())
     title                String
     description          String?
-    date                 DateTime
+    startDate            DateTime
+    endDate              DateTime
     time                 DateTime
     location             String
     capacity             Int
@@ -144,7 +145,7 @@ model UserEventInteraction {
     interactionID String  @id @unique @default(uuid())
     userID        String
     eventID       String
-    like          Boolean
+    like          Boolean @default(false)
     comment       String?
     event         Event   @relation(fields: [eventID], references: [eventID])
     user          User    @relation(fields: [userID], references: [userID])
