@@ -1,9 +1,10 @@
-// generateSecretKey.ts
+
+// generateSecretKey
 import crypto from "crypto";
 
 const generateSecretKey = (): string => {
   const secretKey = crypto.randomBytes(32).toString("hex");
-  console.log("JWT Secret Key:", secretKey);
+  process.env.JWT_SECRET = secretKey;
   return secretKey;
 };
 
