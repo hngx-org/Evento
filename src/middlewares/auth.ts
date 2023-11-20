@@ -35,7 +35,7 @@ function authToken(req: Request, res: Response, next: NextFunction) {
       }
     }
 
-    req.user = user;
+    //req.user = user;
     next();
   });
 }
