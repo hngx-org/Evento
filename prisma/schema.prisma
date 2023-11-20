@@ -12,17 +12,18 @@ datasource db {
 
 model User {
     userID               String                 @id @unique @default(uuid())
-    username             String                 @unique
+    displayName          String?
     email                String                 @unique
     password             String
-    fullName             String
+    firstName            String
+    lastName             String
     bio                  String?
     socialLinks          String?
     websiteURL           String?
     profileImage         String?
     googleAccountID      String?
-    role                 String
-    Participant          Participant[]
+    slug                 String                 @unique
+    role                 Role                   @default(USER)
     Verification         Verification[]
     SocialLink           SocialLink[]
     Ticket               Ticket[]
@@ -33,6 +34,13 @@ model User {
     UserEventInteraction UserEventInteraction[]
     PrivacySetting       PrivacySetting[]
     UserSupportTicket    UserSupportTicket[]
+    myEvents             Event[]
+    signedUpEvents       Event[]                @relation("attendees")
+}
+
+enum Role {
+    ADMIN
+    USER
 }
 
 model Event {
@@ -47,7 +55,7 @@ model Event {
     eventType            String
     organizerID          String
     categoryID           String?
-    participants         Participant[]
+    participants         User[]                 @relation(name: "attendees")
     tickets              Ticket[]
     locations            Location[]
     eventAnalytics       EventAnalytics?
@@ -56,17 +64,7 @@ model Event {
     categoryCategoryID   String?
     UserEventInteraction UserEventInteraction[]
     PrivacySetting       PrivacySetting[]
-}
-
-model Participant {
-    participantID      String  @id @unique @default(uuid())
-    userID             String
-    eventID            String
-    role               String
-    registrationStatus String?
-    paymentStatus      String?
-    user               User    @relation(fields: [userID], references: [userID])
-    event              Event   @relation(fields: [eventID], references: [eventID])
+    organizer            User                   @relation(fields: [organizerID], references: [userID])
 }
 
 model Verification {
@@ -86,15 +84,16 @@ model SocialLink {
 }
 
 model Ticket {
-    ticketID   String @id @unique @default(uuid())
+    ticketID   String  @id @unique @default(uuid())
     eventID    String
     userID     String
     ticketType String
     price      Float
     quantity   Int
-    saleStatus String
-    event      Event  @relation(fields: [eventID], references: [eventID])
-    user       User   @relation(fields: [userID], references: [userID])
+    isValid    Boolean
+    isPaid     Boolean
+    event      Event   @relation(fields: [eventID], references: [eventID])
+    user       User    @relation(fields: [userID], references: [userID])
 }
 
 model Location {
