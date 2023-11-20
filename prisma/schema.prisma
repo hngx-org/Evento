@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -12,35 +9,31 @@ datasource db {
 
 model User {
     userID               String                 @id @unique @default(uuid())
-    displayName          String?
     email                String                 @unique
     password             String
-    firstName            String
-    lastName             String
     bio                  String?
     socialLinks          String?
     websiteURL           String?
     profileImage         String?
     googleAccountID      String?
+    displayName          String?
+    firstName            String
+    lastName             String
     slug                 String                 @unique
+    location             String?
     role                 Role                   @default(USER)
-    Verification         Verification[]
+    myEvents             Event[]
+    PasswordReset        PasswordReset?
+    Payment              Payment[]
+    Preferences          Preferences?
+    PrivacySetting       PrivacySetting[]
+    Security             Security?
     SocialLink           SocialLink[]
     Ticket               Ticket[]
-    PasswordReset        PasswordReset[]
-    Preferences          Preferences[]
-    Security             Security[]
-    Payment              Payment[]
     UserEventInteraction UserEventInteraction[]
-    PrivacySetting       PrivacySetting[]
     UserSupportTicket    UserSupportTicket[]
-    myEvents             Event[]
+    Verification         Verification?
     signedUpEvents       Event[]                @relation("attendees")
-}
-
-enum Role {
-    ADMIN
-    USER
 }
 
 model Event {
@@ -55,16 +48,16 @@ model Event {
     eventType            String
     organizerID          String
     categoryID           String?
-    participants         User[]                 @relation(name: "attendees")
-    tickets              Ticket[]
-    locations            Location[]
-    eventAnalytics       EventAnalytics?
-    Payment              Payment[]
-    Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
     categoryCategoryID   String?
-    UserEventInteraction UserEventInteraction[]
-    PrivacySetting       PrivacySetting[]
+    Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
     organizer            User                   @relation(fields: [organizerID], references: [userID])
+    eventAnalytics       EventAnalytics?
+    locations            Location[]
+    Payment              Payment[]
+    PrivacySetting       PrivacySetting[]
+    tickets              Ticket[]
+    UserEventInteraction UserEventInteraction[]
+    participants         User[]                 @relation("attendees")
 }
 
 model Verification {
@@ -90,8 +83,8 @@ model Ticket {
     ticketType String
     price      Float
     quantity   Int
-    isValid    Boolean
     isPaid     Boolean
+    isValid    Boolean
     event      Event   @relation(fields: [eventID], references: [eventID])
     user       User    @relation(fields: [userID], references: [userID])
 }
@@ -137,8 +130,8 @@ model Payment {
     eventID         String
     amount          Float
     transactionDate DateTime
-    user            User     @relation(fields: [userID], references: [userID])
     event           Event    @relation(fields: [eventID], references: [eventID])
+    user            User     @relation(fields: [userID], references: [userID])
 }
 
 model Category {
@@ -153,8 +146,8 @@ model UserEventInteraction {
     eventID       String
     like          Boolean
     comment       String?
-    user          User    @relation(fields: [userID], references: [userID])
     event         Event   @relation(fields: [eventID], references: [eventID])
+    user          User    @relation(fields: [userID], references: [userID])
 }
 
 model EventAnalytics {
@@ -171,8 +164,8 @@ model PrivacySetting {
     userID           String
     eventID          String
     isPublic         Boolean
-    user             User    @relation(fields: [userID], references: [userID])
     event            Event   @relation(fields: [eventID], references: [eventID])
+    user             User    @relation(fields: [userID], references: [userID])
 }
 
 model UserSupportTicket {
@@ -181,4 +174,9 @@ model UserSupportTicket {
     issueDescription String
     status           String
     user             User   @relation(fields: [userID], references: [userID])
+}
+
+enum Role {
+    ADMIN
+    USER
 }
