@@ -1,20 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
 import bycript from 'bcryptjs';
 import prisma from "../utils/prisma";
-import {BadRequestError} from "../middlewares";
+import {BadRequestError, UnauthorizedError} from "../middlewares";
+import {ResponseHandler} from "../utils/responsehandler";
+import passport from '../utils/passport';
+import { slugify } from '../services/slugify';
+import jwt from 'jsonwebtoken';
+
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { email, password, fullName, role, username } = req.body;
+        const { email, password, firstName, lastName } = req.body;
 
-        const requiredFields = ['email', 'password', 'fullName', 'role', 'username'];
+        const requiredFields = ['email', 'password', 'firstName', 'lastName'];
 
         const fieldDisplayNames = {
             email: 'Email',
             password: 'Password',
-            fullName: 'Full name',
-            role: 'Role',
-            username: 'Username'
+            firstName: 'First Name',
+            lastName: 'Last Name'
           };
           
           const missingFields = requiredFields.filter(field => !req.body[field]);
@@ -24,17 +28,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
               ? `${fieldDisplayNames[missingFields[0]]} is required`
               : `${missingFields.map(field => fieldDisplayNames[field]).join(', ')} are required`;
           
-            return res.status(400).json({
-              message: 'Validation error',
-              errors: errorMessage,
-            });
+             throw new BadRequestError(errorMessage);
           }
           
         if (password.length < 6) {
-            return res.status(400).json({
-                message: 'Validation error',
-                errors: 'Password must be at least 6 characters',
-            });
+            throw new BadRequestError('Password must be at least 6 characters');
         }
 
     const hashedPassword = await bycript.hash(password, 10);
@@ -52,24 +50,110 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         data: {
             email,
             password: hashedPassword,
-            fullName,
-            role,
-            username
+            firstName,
+            lastName,
+            slug: await slugify(`${firstName} ${lastName}`)
         }
     });
     const userWithoutPassword = {
         email: createdUser.email,
-        fullName: createdUser.fullName,
-        username: createdUser.username,
+        firstName: createdUser.firstName,
+        lastName: createdUser.lastName,
+        slug: createdUser.slug
     }
 
-    res.status(200).json({
-        message: "User created successfully",
-        user: userWithoutPassword
-    });
+    ResponseHandler.success(res, userWithoutPassword, 201, "User created successfully");
+    
     } catch (error) {
         next(error);
     }
 }
+
+export const login = async (req: Request, res: Response, next: NextFunction) => {
+        passport.authenticate('local', function(err, user, info) {
+          if (err) { return next(err); }
+          if (!user) { 
+            return next(new UnauthorizedError('Invalid email or password')); 
+        }
+          req.logIn(user, function(err) {
+            const userWithoutPassword = {
+                id: user.userID
+            }
+            const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET_KEY as string || 'secret', { expiresIn: '1h' });
+            if (err) { return next(err); }
+            return ResponseHandler.success(res, {userId: userWithoutPassword.id, token}, 200, "Login successful");
+          });
+        })(req, res, next); 
+}
+
+export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      next();
+    })(req, res, next);
+};
+
+export const google = async (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate('google', {
+        accessType: 'offline',
+        prompt: 'consent',
+        scope: ['profile', 'email']
+    }, async function (err, user, info) {
+        if (err) { return next(err); }
+        if (!user) {
+            return next(new UnauthorizedError('Google auth error'));
+        }
+
+        try {
+            await loginUser(req, user);
+            const token = generateToken(user);
+            return ResponseHandler.success(res, { userId: user.userID, token }, 200, "Login successful");
+        } catch (error) {
+            return next(error);
+        }
+    })(req, res, next);
+}
+
+async function loginUser(req: Request, user: any) {
+    return new Promise((resolve, reject) => {
+        req.logIn(user, (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(user);
+            }
+        });
+    });
+}
+
+function generateToken(user: any): string {
+    const userWithoutPassword = {
+        id: user.userID
+    };
+    return jwt.sign(userWithoutPassword, process.env.JWT_SECRET_KEY as string || 'secret', { expiresIn: '1h' });
+}
+
+export const oauthToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if(req.user) {
+            const token = generateToken(req.user.userID);
+            return ResponseHandler.success(res, { userId: req.user.userID, token }, 200, "Token generated successfully");
+        } else {
+            return next(new UnauthorizedError('User not logged in'));
+        }
+    } catch (error) {
+        return next(error);
+    }
+}
+
+
+
+
 
 

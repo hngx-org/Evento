@@ -4,9 +4,9 @@ class ResponseHandler {
   static success(res: Response, data: any, statusCode = 200, message?: string) {
     const responseObject: Record<string, any> = {
       timestamp: new Date().toISOString(),
+      success: true,
       status: statusCode,
       data: data,
-      success: true,
     };
 
     if (message) {
