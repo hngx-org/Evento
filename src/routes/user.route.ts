@@ -6,8 +6,8 @@ import {
 
 const router: Router = express.Router();
 
-router.get("/user/:id", getUserProfileById);
+router.get("/user/profile/:id", getUserProfileById);
 
-router.patch("/user/:id", updateUserProfileById);
+router.patch("/user/profile/edit/:id", updateUserProfileById);
 
 module.exports = router;
