@@ -15,7 +15,7 @@ export const sayHelloController: RequestHandler = async (
     }
     // you can pass in a message as the fourth argument, if you want to override the default status code pass in a number as the third argument
     // ResponseHandler.success(the response object, the data, the status code, the message)
-    ResponseHandler.success(res, data, 201, "Hello Nigeria 🌍");
+    ResponseHandler.success(res, data, 200, "Hello Nigeria 🌍");
   } catch (err) {
     // tell express to pass the error to the error handler
     next(err);
