@@ -1,6 +1,9 @@
 import { RequestHandler } from "express";
 import { PrismaClient } from "@prisma/client";
-import { createEventsInterface } from "../interfaces/events.interface";
+import {
+  createEventsInterface,
+  editEventsInterface,
+} from "../interfaces/events.interface";
 // import { createEventsService } from "../services/events.service";
 import { BadRequestError } from "../middlewares";
 import { ResponseHandler } from "../utils";
@@ -57,9 +60,76 @@ const createEventController: RequestHandler = async (req, res, next) => {
     // Return the new event as the response
     ResponseHandler.success(res, newEvent, 201, "Event created successfully.");
   } catch (error) {
-    console.error(error);
+    next(error.message);
+  }
+};
+
+// Controller for editing events
+const editEventController: RequestHandler = async (req, res, next) => {
+  try {
+    // Destructure the event ID from the request params
+    const { eventID } = req.params;
+
+    // Destructure payload from the request body
+    const {
+      title,
+      description,
+      startDate,
+      endDate,
+      time,
+      location,
+      capacity,
+      entranceFee,
+      eventType,
+      organizerID,
+      categoryID,
+    } = req.body as editEventsInterface;
+
+    // Check if there is an existing event with the same title as in the request title payload
+    // const existingEvent = await event.findFirst({
+    //   where: {
+    //     title,
+    //   },
+    // });
+
+    // If there is an existing event with the same title, throw an error
+    // if (existingEvent) {
+    //   throw new BadRequestError("An event with this title already exists.");
+    // }
+
+    // Update the event
+    const updatedEvent = await event.update({
+      where: { eventID },
+      data: {
+        title,
+        description,
+        startDate,
+        endDate,
+        time,
+        location,
+        capacity,
+        entranceFee,
+        eventType,
+        organizerID,
+        categoryID,
+      },
+      select: {
+        eventID: true,
+        title: true,
+        description: true,
+      },
+    });
+
+    // Return the updated event as the response
+    ResponseHandler.success(
+      res,
+      updatedEvent,
+      201,
+      "Event updated successfully."
+    );
+  } catch (error) {
     next(error);
   }
 };
 
-export { createEventController };
+export { createEventController, editEventController };
