@@ -1,184 +1,183 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    userID               String                 @id @unique @default(uuid())
-    displayName          String?
-    email                String                 @unique
-    password             String?
-    firstName            String
-    lastName             String
-    bio                  String?
-    socialLinks          String?
-    websiteURL           String?
-    profileImage         String?
-    googleAccountID      String?
-    slug                 String                 @unique
-    role                 Role                   @default(USER)
-    Verification         Verification[]
-    SocialLink           SocialLink[]
-    Ticket               Ticket[]
-    PasswordReset        PasswordReset[]
-    Preferences          Preferences[]
-    Security             Security[]
-    Payment              Payment[]
-    UserEventInteraction UserEventInteraction[]
-    PrivacySetting       PrivacySetting[]
-    UserSupportTicket    UserSupportTicket[]
-    myEvents             Event[]
-    signedUpEvents       Event[]                @relation("attendees")
-}
-
-enum Role {
-    ADMIN
-    USER
+  userID               String                 @id @unique @default(uuid())
+  email                String                 @unique
+  password             String
+  bio                  String?
+  socialLinks          String?
+  websiteURL           String?
+  profileImage         String?
+  googleAccountID      String?
+  displayName          String?
+  firstName            String
+  lastName             String
+  slug                 String                 @unique
+  role                 Role                   @default(USER)
+  location             String?
+  myEvents             Event[]
+  PasswordReset        PasswordReset?
+  Payment              Payment[]
+  Preferences          Preferences?
+  PrivacySetting       PrivacySetting[]
+  Security             Security?
+  SocialLink           SocialLink[]
+  Ticket               Ticket[]
+  UserEventInteraction UserEventInteraction[]
+  UserSupportTicket    UserSupportTicket[]
+  Verification         Verification?
+  signedUpEvents       Event[]                @relation("attendees")
 }
 
 model Event {
-    eventID              String                 @id @unique @default(uuid())
-    title                String
-    description          String?
-    date                 DateTime
-    time                 DateTime
-    location             String
-    capacity             Int
-    entranceFee          Float?
-    eventType            String
-    organizerID          String
-    categoryID           String?
-    participants         User[]                 @relation(name: "attendees")
-    tickets              Ticket[]
-    locations            Location[]
-    eventAnalytics       EventAnalytics?
-    Payment              Payment[]
-    Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
-    categoryCategoryID   String?
-    UserEventInteraction UserEventInteraction[]
-    PrivacySetting       PrivacySetting[]
-    organizer            User                   @relation(fields: [organizerID], references: [userID])
+  eventID              String                 @id @unique @default(uuid())
+  title                String
+  description          String?
+  time                 DateTime
+  location             String
+  capacity             Int
+  entranceFee          Float?
+  eventType            String
+  organizerID          String
+  categoryID           String?
+  categoryCategoryID   String?
+  endDate              DateTime
+  startDate            DateTime
+  Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
+  organizer            User                   @relation(fields: [organizerID], references: [userID])
+  eventAnalytics       EventAnalytics?
+  locations            Location[]
+  Payment              Payment[]
+  PrivacySetting       PrivacySetting[]
+  tickets              Ticket[]
+  UserEventInteraction UserEventInteraction[]
+  participants         User[]                 @relation("attendees")
 }
 
 model Verification {
-    userID           String   @id
-    verificationCode String
-    timestamp        DateTime
-    status           String?
-    user             User     @relation(fields: [userID], references: [userID])
+  userID           String   @id
+  verificationCode String
+  timestamp        DateTime
+  status           String?
+  user             User     @relation(fields: [userID], references: [userID])
 }
 
 model SocialLink {
-    linkID         String @id @unique @default(uuid())
-    userID         String
-    socialPlatform String
-    linkURL        String
-    user           User   @relation(fields: [userID], references: [userID])
+  linkID         String @id @unique @default(uuid())
+  userID         String
+  socialPlatform String
+  linkURL        String
+  user           User   @relation(fields: [userID], references: [userID])
 }
 
 model Ticket {
-    ticketID   String  @id @unique @default(uuid())
-    eventID    String
-    userID     String
-    ticketType String
-    price      Float
-    quantity   Int
-    isValid    Boolean
-    isPaid     Boolean
-    event      Event   @relation(fields: [eventID], references: [eventID])
-    user       User    @relation(fields: [userID], references: [userID])
+  ticketID   String  @id @unique @default(uuid())
+  eventID    String
+  userID     String
+  ticketType String
+  price      Float
+  quantity   Int
+  isPaid     Boolean
+  isValid    Boolean
+  event      Event   @relation(fields: [eventID], references: [eventID])
+  user       User    @relation(fields: [userID], references: [userID])
 }
 
 model Location {
-    locationID String @id @unique @default(uuid())
-    eventID    String
-    venueName  String
-    address    String
-    city       String
-    country    String
-    latitude   Float
-    longitude  Float
-    event      Event  @relation(fields: [eventID], references: [eventID])
+  locationID String @id @unique @default(uuid())
+  eventID    String
+  venueName  String
+  address    String
+  city       String
+  country    String
+  latitude   Float
+  longitude  Float
+  event      Event  @relation(fields: [eventID], references: [eventID])
 }
 
 model PasswordReset {
-    userID          String   @id
-    resetCode       String
-    expiryTimestamp DateTime
-    status          String
-    user            User     @relation(fields: [userID], references: [userID])
+  userID          String   @id
+  resetCode       String
+  expiryTimestamp DateTime
+  status          String
+  user            User     @relation(fields: [userID], references: [userID])
 }
 
 model Preferences {
-    userID                  String  @id
-    notificationPreferences String?
-    language                String?
-    regionalSettings        String?
-    user                    User    @relation(fields: [userID], references: [userID])
+  userID                  String  @id
+  notificationPreferences String?
+  language                String?
+  regionalSettings        String?
+  user                    User    @relation(fields: [userID], references: [userID])
 }
 
 model Security {
-    userID                          String  @id
-    twoFactorAuthenticationSettings String?
-    connectedDevices                String?
-    user                            User    @relation(fields: [userID], references: [userID])
+  userID                          String  @id
+  twoFactorAuthenticationSettings String?
+  connectedDevices                String?
+  user                            User    @relation(fields: [userID], references: [userID])
 }
 
 model Payment {
-    paymentID       String   @id @unique @default(uuid())
-    userID          String
-    eventID         String
-    amount          Float
-    transactionDate DateTime
-    user            User     @relation(fields: [userID], references: [userID])
-    event           Event    @relation(fields: [eventID], references: [eventID])
+  paymentID       String   @id @unique @default(uuid())
+  userID          String
+  eventID         String
+  amount          Float
+  transactionDate DateTime
+  event           Event    @relation(fields: [eventID], references: [eventID])
+  user            User     @relation(fields: [userID], references: [userID])
 }
 
 model Category {
-    categoryID String  @id @unique @default(uuid())
-    name       String
-    events     Event[]
+  categoryID String  @id @unique @default(uuid())
+  name       String
+  events     Event[]
 }
 
 model UserEventInteraction {
-    interactionID String  @id @unique @default(uuid())
-    userID        String
-    eventID       String
-    like          Boolean
-    comment       String?
-    user          User    @relation(fields: [userID], references: [userID])
-    event         Event   @relation(fields: [eventID], references: [eventID])
+  interactionID String  @id @unique @default(uuid())
+  userID        String
+  eventID       String
+  like          Boolean @default(false)
+  comment       String?
+  event         Event   @relation(fields: [eventID], references: [eventID])
+  user          User    @relation(fields: [userID], references: [userID])
 }
 
 model EventAnalytics {
-    analyticsID       String @id @unique @default(uuid())
-    eventID           String @unique
-    participantsCount Int
-    viewsCount        Int
-    revenue           Float
-    event             Event  @relation(fields: [eventID], references: [eventID])
+  analyticsID       String @id @unique @default(uuid())
+  eventID           String @unique
+  participantsCount Int
+  viewsCount        Int
+  revenue           Float
+  event             Event  @relation(fields: [eventID], references: [eventID])
 }
 
 model PrivacySetting {
-    privacySettingID String  @id @unique @default(uuid())
-    userID           String
-    eventID          String
-    isPublic         Boolean
-    user             User    @relation(fields: [userID], references: [userID])
-    event            Event   @relation(fields: [eventID], references: [eventID])
+  privacySettingID String  @id @unique @default(uuid())
+  userID           String
+  eventID          String
+  isPublic         Boolean
+  event            Event   @relation(fields: [eventID], references: [eventID])
+  user             User    @relation(fields: [userID], references: [userID])
 }
 
 model UserSupportTicket {
-    ticketID         String @id @unique @default(uuid())
-    userID           String
-    issueDescription String
-    status           String
-    user             User   @relation(fields: [userID], references: [userID])
+  ticketID         String @id @unique @default(uuid())
+  userID           String
+  issueDescription String
+  status           String
+  user             User   @relation(fields: [userID], references: [userID])
+}
+
+enum Role {
+  ADMIN
+  USER
 }

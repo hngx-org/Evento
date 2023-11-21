@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import prisma from './prisma';
 import { slugify } from '../services/slugify';
+import { UnauthorizedError } from '../middlewares';
 
 interface User {
     userID: number;
@@ -20,27 +21,30 @@ const opts: any = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.JWT_SECRET;
 
-passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
-    console.log(jwt_payload)
-    prisma.user.findUnique({
-        where: {
-            userID: jwt_payload.sub
-        }
-    }).then((user) => {
-        const userWithoutPassword = {
-            id: user?.userID
-        }
-
-        if (user) {
-            return done(null, userWithoutPassword);
-        } else {
+passport.use(
+    new JwtStrategy(opts, function (jwt_payload, done) {
+      prisma.user
+        .findUnique({
+          where: {
+            userID: jwt_payload.sub,
+          },
+          select: {
+            userID: true,
+          },
+          
+        })
+        .then((user) => {
+            if (user) {
+            return done(null, user);
+          } else {
             return done(null, false);
-        }
-    }).catch((err) => {
-        return done(err, false);
-    });
-}));
-
+          }
+        })
+        .catch((err) => {
+          return done(err, false);
+        });
+    })
+  );
 passport.use(new LocalStrategy( {
     usernameField: 'email',
     passwordField: 'password',

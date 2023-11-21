@@ -1,5 +1,5 @@
 import express, { Router, Request, Response, NextFunction } from "express";
-import { login, register, google, oauthToken } from "../controllers/auth.controller";
+import { login, register, google, oauthToken, authenticateJWT } from "../controllers/auth.controller";
 import passport from '../utils/passport';
 
 const router: Router = express.Router();
