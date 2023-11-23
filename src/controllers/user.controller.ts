@@ -203,4 +203,44 @@ const addSocialLinks = async (
     next(error);
   }
 };
-export { getUserProfileById, updateUserProfileById, addSocialLinks };
+
+// get social links by user id
+const getSocialLinksByUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userID = req.params.id;
+
+  try {
+    const socialLinks = await prisma.socialLink.findMany({
+      where: { userID },
+      select: {
+        linkID: true,
+        userID: true,
+        socialPlatform: true,
+        linkURL: true,
+      },
+    });
+
+    if (!socialLinks) {
+      throw new NotFoundError("Social links not found");
+    }
+
+    ResponseHandler.success(
+      res,
+      socialLinks,
+      200,
+      "Social links fetched successfully"
+    );
+  } catch (error) {
+    //   check for prisma errors
+    next(error);
+  }
+};
+export {
+  getUserProfileById,
+  updateUserProfileById,
+  addSocialLinks,
+  getSocialLinksByUserId,
+};
