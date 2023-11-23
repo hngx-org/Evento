@@ -1,4 +1,4 @@
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions  } from 'passport-jwt';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrtegy } from 'passport-google-oauth20';
 import bcrypt from 'bcryptjs';
@@ -15,34 +15,31 @@ interface User {
     lastName: string;
     slug: string;
 }
+const options: StrategyOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey:  "your_secret_key", 
+};
 
-const opts: any = {};
 
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = process.env.JWT_SECRET;
-
-passport.use(
-    new JwtStrategy(opts, function (jwt_payload, done) {
-      prisma.user
-        .findUnique({
-          where: {
-            userID: jwt_payload.sub,
-          },
-          select: {
-            userID: true,
-          },
-          
-        })
-        .then((user) => {
+passport.use(new JwtStrategy(options, async (jwt_payload, done) => {
+        try {
+            const user = await prisma.user.findUnique({
+              where: {
+                userID: jwt_payload?.id,
+              },
+              select: {
+                userID: true,
+              },
+            });
+        
             if (user) {
-            return done(null, user);
-          } else {
-            return done(null, false);
+              return done(null, user);
+            } else {
+              return done(null, false);
+            }
+          } catch (err) {
+            return done(err, false);
           }
-        })
-        .catch((err) => {
-          return done(err, false);
-        });
     })
   );
 passport.use(new LocalStrategy( {
@@ -123,9 +120,19 @@ passport.serializeUser(function(user: User, done) {
 });
 
 passport.deserializeUser(function(id: string, done) {
-    prisma.user.findUnique({
+    prisma.user.findFirst({
         where: {
-            userID: id 
+            OR: [
+                { userID: id },
+                { email: id },
+            ],
+        },
+        select: {
+            userID: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            slug: true
         }
     }).then((user) => {
         done(null, user);
