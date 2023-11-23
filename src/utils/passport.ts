@@ -120,9 +120,19 @@ passport.serializeUser(function(user: User, done) {
 });
 
 passport.deserializeUser(function(id: string, done) {
-    prisma.user.findUnique({
+    prisma.user.findFirst({
         where: {
-            userID: id 
+            OR: [
+                { userID: id },
+                { email: id },
+            ],
+        },
+        select: {
+            userID: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            slug: true
         }
     }).then((user) => {
         done(null, user);
