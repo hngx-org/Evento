@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+
 import jwt from "jsonwebtoken";
 import generateSecretKey from "../services/generateSecretKey";
 import {
@@ -18,6 +19,7 @@ const secretKey = jwtSecret || generateSecretKey();
 
 function authToken(req: Request, res: Response, next: NextFunction) {
   const token = req.header("Authorization");
+
 
   if (!token) {
     return next(new UnauthorizedError("Unauthorized"));
