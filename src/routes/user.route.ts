@@ -54,7 +54,7 @@ const router: Router = express.Router();
 
 /**
  * @swagger
- * /user/profile/{id}:
+ * /api/v1/user/profile/{id}:
  *   get:
  *     summary: Get User Profile by ID
  *     description: Retrieve user profile details by user ID.
@@ -78,7 +78,7 @@ router.get("/user/profile/:id", getUserProfileById);
 
 /**
  * @swagger
- * /user/profile/edit/{id}:
+ * /api/v1/user/profile/edit/{id}:
  *   patch:
  *     summary: Update User Profile by ID
  *     description: Update user profile details by user ID.
@@ -109,7 +109,7 @@ router.patch("/user/profile/edit/:id", updateUserProfileById);
 
 /**
  * @swagger
- * /user/profile/social/add/{id}:
+ * /api/v1/user/profile/social/add/{id}:
  *   post:
  *     summary: Add Social Links to User Profile
  *     description: Add social links to the user profile by user ID.
@@ -140,7 +140,7 @@ router.post("/user/profile/social/add/:id", addSocialLinks);
 
 /**
  * @swagger
- * /user/profile/social/{id}:
+ * /api/v1/user/profile/social/{id}:
  *   get:
  *     summary: Get Social Links by User ID
  *     description: Retrieve social links associated with the user profile by user ID.
