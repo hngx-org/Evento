@@ -50,6 +50,19 @@ const router: Router = express.Router();
  *           type: string
  *         location:
  *           type: string
+ *
+ */
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     SocialLinkResponse:
+ *       type: object
+ *       properties:
+ *         platform:
+ *           type: string
+ *         url:
+ *           type: string
  */
 
 /**
@@ -72,7 +85,7 @@ const router: Router = express.Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/UserProfileResponse'
+ *
  */
 router.get("/user/profile/:id", getUserProfileById);
 
