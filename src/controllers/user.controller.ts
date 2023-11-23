@@ -12,6 +12,7 @@ import prisma from "../utils/prisma";
 import { Prisma } from "@prisma/client";
 
 import { userInterface } from "../interfaces/user.interface";
+import { socialInterface } from "../interfaces/user.interface";
 
 // validate id
 const validateId = (id: string): string | null => {
@@ -151,4 +152,55 @@ const updateUserProfileById = async (
     next(error);
   }
 };
-export { getUserProfileById, updateUserProfileById };
+
+// Add Social Links to User Profile
+const addSocialLinks = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userID = req.params.id;
+  // destructuring the request body
+
+  // verify the user id
+  const validUser = await prisma.user.findUnique({
+    where: { userID },
+    select: {
+      userID: true,
+    },
+  });
+
+  if (!validUser) {
+    throw new NotFoundError("User not found");
+  }
+
+  try {
+    const { socialPlatform, linkURL } = req.body as socialInterface;
+
+    // update the social links table
+    const sociallink = await prisma.socialLink.create({
+      data: {
+        userID,
+        socialPlatform,
+        linkURL,
+      },
+    });
+
+    if (!sociallink) {
+      throw new NotFoundError("Social link not added");
+    }
+
+    //
+
+    ResponseHandler.success(
+      res,
+      sociallink,
+      200,
+      "Social link Added successfully"
+    );
+  } catch (error) {
+    //   check for prisma errors
+    next(error);
+  }
+};
+export { getUserProfileById, updateUserProfileById, addSocialLinks };

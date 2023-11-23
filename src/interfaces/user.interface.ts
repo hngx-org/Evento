@@ -14,4 +14,10 @@ interface userInterface {
   location?: string;
 }
 
-export { userInterface };
+interface socialInterface {
+  userID: string;
+  socialPlatform: string;
+  linkURL: string;
+}
+
+export { userInterface, socialInterface };
