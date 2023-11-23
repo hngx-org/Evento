@@ -1,30 +1,23 @@
-interface User {
-    userID: string;
-    email: string;
-    password: string;
-    bio?: string;
-    socialLinks: string;
-    websiteURL?: string;
-    profileImage?: string;
-    googleAccountID?: string;
-    displayName?: string;
-    firstName: string;
-    lastName: string;
-    slug: string;
-    role: "USER" | "ADMIN";
-    location?: string;
-    myEvents: any[];
-    PasswordReset: "" |  null;
-    Payment: any[];
-    Preferences?: any[];
-    PrivacySetting: any[];
-    Security?: string;
-    SocialLink: any[];
-    Ticket: any[];
-    UserEventInteraction: any[];
-    UserSupportTicket: any[];
-    Verification?: String;
-    signedUpEvents: any[]; // Assuming this should be an array of signed up events
-  }
+// user interface for payload
+interface userInterface {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  bio?: string;
+  websiteURL?: string;
+  profileImage?: string;
+  googleAccountID?: string;
+  slug?: string;
+  role?: string;
+  location?: string;
+}
 
-  export type { User };
+interface socialInterface {
+  userID: string;
+  socialPlatform: string;
+  linkURL: string;
+}
+
+export { userInterface, socialInterface };

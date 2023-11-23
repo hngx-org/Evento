@@ -13,4 +13,6 @@ interface createEventsInterface {
   categoryID?: string;
 }
 
-export { createEventsInterface };
+interface editEventsInterface extends createEventsInterface {}
+
+export { createEventsInterface, editEventsInterface };
