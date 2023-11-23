@@ -6,6 +6,10 @@ import {ResponseHandler} from "../utils/responsehandler";
 import passport from '../utils/passport';
 import { slugify } from '../services/slugify';
 import jwt from 'jsonwebtoken';
+interface CustomUser extends Express.User {
+    userID: string;
+
+  }
 
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -79,7 +83,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             const userWithoutPassword = {
                 id: user.userID
             }
-            const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET_KEY as string || 'secret', { expiresIn: '1h' });
+            const token = jwt.sign(userWithoutPassword,  'your_secret_key', { expiresIn: '1h' });
             if (err) { return next(err); }
             return ResponseHandler.success(res, {userId: userWithoutPassword.id, token}, 200, "Login successful");
           });
@@ -92,7 +96,7 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
         return next(err);
       }
       if (!user) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return next(new UnauthorizedError('Not authorized to access this resource🤔'));
       }
       
       next();
@@ -141,9 +145,10 @@ function generateToken(user: any): string {
 
 export const oauthToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const user = req.user as CustomUser;
         if(req.user) {
-            const token = generateToken(req.user.userID);
-            return ResponseHandler.success(res, { userId: req.user.userID, token }, 200, "Token generated successfully");
+            const token = generateToken(user.userID);
+            return ResponseHandler.success(res, { userId: user.userID, token }, 200, "Token generated successfully");
         } else {
             return next(new UnauthorizedError('User not logged in'));
         }

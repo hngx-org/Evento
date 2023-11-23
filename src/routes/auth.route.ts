@@ -28,7 +28,7 @@ router.get('/logout', function(req, res, next){
 });
 router.get('/authorize', oauthToken);
 
-router.get('/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.get('/protected', authenticateJWT, (req, res) => {
   res.send({msg: 'I am protected and you are authorized'});
 });
 
