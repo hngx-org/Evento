@@ -89,6 +89,19 @@ const getEventController: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Controller for getting all events
+const getAllEventsController: RequestHandler = async (req, res, next) => {
+  try {
+    // Get all events
+    const events = await event.findMany();
+
+    // Return the events as the response
+    ResponseHandler.success(res, events, 200, "Events found.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Controller for editing events
 const editEventController: RequestHandler = async (req, res, next) => {
   try {
@@ -157,4 +170,9 @@ const editEventController: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { createEventController, getEventController, editEventController };
+export {
+  createEventController,
+  getEventController,
+  getAllEventsController,
+  editEventController,
+};
