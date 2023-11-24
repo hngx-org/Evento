@@ -1,16 +1,66 @@
 import express, { Router, Request, Response, NextFunction } from "express";
-import { login, register, google, oauthToken } from "../controllers/auth.controller";
-import {authenticateJWT } from '../middlewares/auth';
-import passport from '../utils/passport';
+import {
+  login,
+  register,
+  google,
+  oauthToken,
+} from "../controllers/auth.controller";
+import { authenticateJWT } from "../middlewares/auth";
+import passport from "../utils/passport";
 
 const router: Router = express.Router();
-
 
 /**
  * @swagger
  * tags:
  *   name: Authentication
  *   description: User authentication and authorization routes
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *         firstName:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *     UserResponse:
+ *       type: object
+ *       properties:
+ *         userID:
+ *           type: string
+ *         email:
+ *           type: string
+ *     LoginCredentials:
+ *       type: object
+ *       properties:
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *     LoginResponse:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
+ *     Error:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *     AuthorizationResponse:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
  */
 
 /**
@@ -40,8 +90,7 @@ const router: Router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 
-router.post('/register', register);
-
+router.post("/register", register);
 
 /**
  * @swagger
@@ -69,13 +118,11 @@ router.post('/register', register);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/login', login);
+router.post("/login", login);
 
-
-router.get('/login', (req, res) => {
-    res.send('Login page');
-});  
-
+router.get("/login", (req, res) => {
+  res.send("Login page");
+});
 
 /**
  * @swagger
@@ -98,12 +145,15 @@ router.get('/login', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/google', google);
+router.get("/google", google);
 
-router.get('/auth/google/callback', 
-  passport.authenticate('google', { successRedirect: '/', 
-  failureRedirect: 'http://localhost:3000/api/v1/login' }));
-
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "/",
+    failureRedirect: "http://localhost:3000/api/v1/login",
+  })
+);
 
 /**
  * @swagger
@@ -126,13 +176,14 @@ router.get('/auth/google/callback',
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/logout', function(req, res, next){
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    res.redirect('/');
+router.get("/logout", function (req, res, next) {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
   });
 });
-
 
 /**
  * @swagger
@@ -156,12 +207,10 @@ router.get('/logout', function(req, res, next){
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/authorize', oauthToken);
+router.get("/authorize", oauthToken);
 
-
-
-router.get('/protected', authenticateJWT, (req, res) => {
-  res.send({msg: 'I am protected and you are authorized'});
+router.get("/protected", authenticateJWT, (req, res) => {
+  res.send({ msg: "I am protected and you are authorized" });
 });
 
 module.exports = router;

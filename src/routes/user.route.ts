@@ -50,12 +50,6 @@ const router: Router = express.Router();
  *           type: string
  *         location:
  *           type: string
- *
- */
-/**
- * @swagger
- * components:
- *   schemas:
  *     SocialLinkResponse:
  *       type: object
  *       properties:
@@ -63,6 +57,32 @@ const router: Router = express.Router();
  *           type: string
  *         url:
  *           type: string
+ *     SocialLinkRequest:
+ *       type: object
+ *       properties:
+ *         platform:
+ *           type: string
+ *         url:
+ *           type: string
+ *     UserProfileUpdateRequest:
+ *       type: object
+ *       properties:
+ *         bio:
+ *           type: string
+ *         websiteURL:
+ *           type: string
+ *         displayName:
+ *           type: string
+ *         firstName:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *         location:
+ *           type: string
+ *     SocialLinkListResponse:
+ *       type: array
+ *       items:
+ *         $ref: '#/components/schemas/SocialLinkResponse'
  */
 
 /**
@@ -85,7 +105,36 @@ const router: Router = express.Router();
  *         content:
  *           application/json:
  *             schema:
- *
+ *               type: object
+ *               properties:
+ *                 userID:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 bio:
+ *                   type: string
+ *                 socialLinks:
+ *                   type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/SocialLinkResponse'
+ *                 websiteURL:
+ *                   type: string
+ *                 profileImage:
+ *                   type: string
+ *                 googleAccountID:
+ *                   type: string
+ *                 displayName:
+ *                   type: string
+ *                 firstName:
+ *                   type: string
+ *                 lastName:
+ *                   type: string
+ *                 slug:
+ *                   type: string
+ *                 role:
+ *                   type: string
+ *                 location:
+ *                   type: string
  */
 router.get("/user/profile/:id", getUserProfileById);
 
