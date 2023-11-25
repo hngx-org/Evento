@@ -4,7 +4,7 @@ interface createEventsInterface {
   description?: string;
   startDate: Date;
   endDate: Date;
-  time: string;
+  time: Date;
   location: string;
   capacity: number;
   entranceFee?: number;
