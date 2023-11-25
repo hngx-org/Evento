@@ -238,6 +238,53 @@ const getSocialLinksByUserId = async (
     next(error);
   }
 };
+
+// update contact information by user id
+const updateContactInformationByUserId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userID = req.params.id;
+  // destructuring the request body
+
+  // verify the user id
+  const validUser = await prisma.user.findUnique({
+    where: { userID },
+    select: {
+      userID: true,
+    },
+  });
+
+  if (!validUser) {
+    throw new NotFoundError("User not found");
+  }
+
+  try {
+    const { email, phoneNumber } = req.body as userInterface;
+
+    // update the user profile
+    const updatedUser = await prisma.user.update({
+      where: { userID },
+      data: {
+        email,
+        phoneNumber,
+      },
+    });
+
+    ResponseHandler.success(
+      res,
+      updatedUser,
+      200,
+      "User contact information updated successfully"
+    );
+  } catch (error) {
+    //   check for prisma errors
+    next(error);
+  }
+};
+
+// upload profile picture controller
 export {
   getUserProfileById,
   updateUserProfileById,
