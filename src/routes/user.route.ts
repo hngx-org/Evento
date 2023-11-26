@@ -1,12 +1,30 @@
 import express, { Router } from "express";
+import multer from "multer";
+import { Request, Response, NextFunction } from "express";
+import { ForbiddenError } from "../middlewares";
 import {
   getUserProfileById,
   updateUserProfileById,
   addSocialLinks,
   getSocialLinksByUserId,
+  uploadProfileImage,
 } from "./../controllers/user.controller";
 
 const router: Router = express.Router();
+
+const storage = multer.memoryStorage();
+// const uploads = multer({ storage: storage }).single("file");
+const uploads = multer({ dest: "uploads/" }).single("file");
+const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
+  uploads(req, res, function (err) {
+    if (err) {
+      const newForbbidenError = new ForbiddenError("You must upload one image");
+      next(newForbbidenError);
+    }
+    console.log(req.file, "here");
+    next();
+  });
+};
 
 /**
  * @swagger
@@ -223,5 +241,12 @@ router.post("/user/profile/social/add/:id", addSocialLinks);
  *               $ref: '#/components/schemas/SocialLinkListResponse'
  */
 router.get("/user/profile/social/:id", getSocialLinksByUserId);
+
+// upload profile image
+router.post(
+  "/user/profile/image/upload/:id",
+  uploadHandler,
+  uploadProfileImage
+);
 
 module.exports = router;

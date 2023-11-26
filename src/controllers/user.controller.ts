@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from "express";
+import { Response, Request, NextFunction, RequestHandler } from "express";
 import {
   BadRequestError,
   NotFoundError,
@@ -16,6 +16,9 @@ import {
   socialInterface,
   contactInterface,
 } from "../interfaces/user.interface";
+
+import { uploadProfileImageService } from "../services/profileimage";
+import { cloudinaryService } from "../services/imageupload";
 
 // validate id
 const validateId = (id: string): string | null => {
@@ -243,6 +246,100 @@ const getSocialLinksByUserId = async (
   }
 };
 
+const uploadProfileImage: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("start");
+  if (!req.file) {
+    throw new BadRequestError("Please add a Profile Image");
+  }
+
+  console.log(req.file);
+
+  const userID = req.params.id;
+  const file = req.file as any;
+  const { service } = req.body;
+
+  try {
+    // verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID },
+      select: {
+        userID: true,
+      },
+    });
+
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    // call the cloudinary service
+    const { urls } = await cloudinaryService(file, service);
+    console.log(urls);
+    const data = await uploadProfileImageService(userID, urls);
+
+    // extract the url from the data response
+    const profileImage = data;
+
+    ResponseHandler.success(
+      res,
+      profileImage,
+      200,
+      "User profile picture updated successfully"
+    );
+  } catch (error) {
+    // check for prisma errors
+    next(error);
+  }
+};
+
+// // upload profile picture controller
+// const uploadProfileImage = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   if (!req.files) return new BadRequestError(res, "add event image", 400);
+//   const userID = req.params.id;
+//   const files = req.files as any;
+//   const { service, userId } = req.body;
+
+//   try {
+//     const imagesRes = await cloudinaryService(files, req.body.service);
+
+//     // verify the user id
+//     const validUser = await prisma.user.findUnique({
+//       where: { userID },
+//       select: {
+//         userID: true,
+//       },
+//     });
+
+//     if (!validUser) {
+//       throw new NotFoundError("User not found");
+//     }
+
+//     // call the cloudinary service
+//     const { urls } = await cloudinaryService(files, service);
+//     const data = await uploadProfileImageService(userID, urls);
+
+//     //   extract the url from the data response
+//     const profileImage = data;
+
+//     ResponseHandler.success(
+//       res,
+//       profileImage,
+//       200,
+//       "User profile picture updated successfully"
+//     );
+//   } catch (error) {
+//     //   check for prisma errors
+//     next(error);
+//   }
+// };
+
 // update contact information by user id
 const updateContactInformationByUserId = async (
   req: Request,
@@ -293,4 +390,6 @@ export {
   updateUserProfileById,
   addSocialLinks,
   getSocialLinksByUserId,
+  uploadProfileImage,
+  updateContactInformationByUserId,
 };
