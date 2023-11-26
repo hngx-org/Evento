@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from "express";
+import { Response, Request, NextFunction, RequestHandler } from "express";
 import {
   BadRequestError,
   NotFoundError,
@@ -11,8 +11,14 @@ import { v4 as uuidv4 } from "uuid";
 import prisma from "../utils/prisma";
 import { Prisma } from "@prisma/client";
 
-import { userInterface } from "../interfaces/user.interface";
-import { socialInterface } from "../interfaces/user.interface";
+import {
+  userInterface,
+  socialInterface,
+  contactInterface,
+} from "../interfaces/user.interface";
+
+import { uploadProfileImageService } from "../services/profileimage";
+import { cloudinaryService } from "../services/imageupload";
 
 // validate id
 const validateId = (id: string): string | null => {
@@ -45,9 +51,7 @@ const getUserProfileById = async (
         email: true,
         bio: true,
         socialLinks: true,
-        websiteURL: true,
         profileImage: true,
-        googleAccountID: true,
         displayName: true,
         firstName: true,
         lastName: true,
@@ -98,7 +102,7 @@ const updateUserProfileById = async (
   // destructuring the request body
 
   try {
-    const { firstName, lastName, displayName, bio, websiteURL, location } =
+    const { firstName, lastName, displayName, bio, location } =
       req.body as userInterface;
 
     // find the user by id
@@ -107,7 +111,6 @@ const updateUserProfileById = async (
       select: {
         userID: true,
         bio: true,
-        websiteURL: true,
         profileImage: true,
         displayName: true,
         firstName: true,
@@ -136,7 +139,6 @@ const updateUserProfileById = async (
         lastName,
         displayName,
         bio,
-        websiteURL,
         location,
       },
     });
@@ -175,14 +177,17 @@ const addSocialLinks = async (
   }
 
   try {
-    const { socialPlatform, linkURL } = req.body as socialInterface;
+    const { websiteURL, twitterURL, facebookURL, instagramURL } =
+      req.body as socialInterface;
 
     // update the social links table
     const sociallink = await prisma.socialLink.create({
       data: {
         userID,
-        socialPlatform,
-        linkURL,
+        websiteURL,
+        twitterURL,
+        facebookURL,
+        instagramURL,
       },
     });
 
@@ -218,8 +223,10 @@ const getSocialLinksByUserId = async (
       select: {
         linkID: true,
         userID: true,
-        socialPlatform: true,
-        linkURL: true,
+        websiteURL: true,
+        twitterURL: true,
+        facebookURL: true,
+        instagramURL: true,
       },
     });
 
@@ -238,6 +245,100 @@ const getSocialLinksByUserId = async (
     next(error);
   }
 };
+
+const uploadProfileImage: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("start");
+  if (!req.file) {
+    throw new BadRequestError("Please add a Profile Image");
+  }
+
+  console.log(req.file);
+
+  const userID = req.params.id;
+  const file = req.file as any;
+  const { service } = req.body;
+
+  try {
+    // verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID },
+      select: {
+        userID: true,
+      },
+    });
+
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    // call the cloudinary service
+    const { urls } = await cloudinaryService(file, service);
+    console.log(urls);
+    const data = await uploadProfileImageService(userID, urls);
+
+    // extract the url from the data response
+    const profileImage = data;
+
+    ResponseHandler.success(
+      res,
+      profileImage,
+      200,
+      "User profile picture updated successfully"
+    );
+  } catch (error) {
+    // check for prisma errors
+    next(error);
+  }
+};
+
+// // upload profile picture controller
+// const uploadProfileImage = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   if (!req.files) return new BadRequestError(res, "add event image", 400);
+//   const userID = req.params.id;
+//   const files = req.files as any;
+//   const { service, userId } = req.body;
+
+//   try {
+//     const imagesRes = await cloudinaryService(files, req.body.service);
+
+//     // verify the user id
+//     const validUser = await prisma.user.findUnique({
+//       where: { userID },
+//       select: {
+//         userID: true,
+//       },
+//     });
+
+//     if (!validUser) {
+//       throw new NotFoundError("User not found");
+//     }
+
+//     // call the cloudinary service
+//     const { urls } = await cloudinaryService(files, service);
+//     const data = await uploadProfileImageService(userID, urls);
+
+//     //   extract the url from the data response
+//     const profileImage = data;
+
+//     ResponseHandler.success(
+//       res,
+//       profileImage,
+//       200,
+//       "User profile picture updated successfully"
+//     );
+//   } catch (error) {
+//     //   check for prisma errors
+//     next(error);
+//   }
+// };
 
 // update contact information by user id
 const updateContactInformationByUserId = async (
@@ -261,14 +362,13 @@ const updateContactInformationByUserId = async (
   }
 
   try {
-    const { email, phoneNumber } = req.body as userInterface;
+    const { email } = req.body as contactInterface;
 
     // update the user profile
     const updatedUser = await prisma.user.update({
       where: { userID },
       data: {
         email,
-        phoneNumber,
       },
     });
 
@@ -290,4 +390,6 @@ export {
   updateUserProfileById,
   addSocialLinks,
   getSocialLinksByUserId,
+  uploadProfileImage,
+  updateContactInformationByUserId,
 };
