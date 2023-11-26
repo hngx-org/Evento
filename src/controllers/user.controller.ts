@@ -259,17 +259,20 @@ const uploadProfileImage: RequestHandler = async (
   console.log(req.file);
 
   const userID = req.params.id;
+  console.log(userID);
   const file = req.file as any;
   const { service } = req.body;
 
   try {
     // verify the user id
     const validUser = await prisma.user.findUnique({
-      where: { userID },
+      where: { userID: userID },
       select: {
         userID: true,
       },
     });
+
+    console.log(validUser);
 
     if (!validUser) {
       throw new NotFoundError("User not found");

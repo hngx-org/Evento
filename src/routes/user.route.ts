@@ -13,8 +13,8 @@ import {
 const router: Router = express.Router();
 
 const storage = multer.memoryStorage();
-// const uploads = multer({ storage: storage }).single("file");
-const uploads = multer({ dest: "uploads/" }).single("file");
+const uploads = multer({ storage: storage }).single("file");
+// const uploads = multer({ dest: "uploads/" }).single("file");
 const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
   uploads(req, res, function (err) {
     if (err) {
@@ -242,7 +242,52 @@ router.post("/user/profile/social/add/:id", addSocialLinks);
  */
 router.get("/user/profile/social/:id", getSocialLinksByUserId);
 
-// upload profile image
+/**
+ * @swagger
+ * paths:
+ *   /api/v1/user/profile/image/upload/{id}:
+ *     post:
+ *       summary: Upload a profile image for a user.
+ *       description: Uploads a profile image for the specified user ID.
+ *       tags: [User]
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *           description: The ID of the user for whom the profile image is being uploaded.
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           multipart/form-data:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 file:
+ *                   type: string
+ *                   format: binary
+ *       responses:
+ *         '200':
+ *           description: Profile image uploaded successfully.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   successful:
+ *                     type: boolean
+ *                   message:
+ *                     type: string
+ *                   urls:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *         '400':
+ *           description: Bad Request. The request is missing required parameters.
+ *         '500':
+ *           description: Internal Server Error. An error occurred while processing the request.
+ */
 router.post(
   "/user/profile/image/upload/:id",
   uploadHandler,
