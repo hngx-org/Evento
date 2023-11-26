@@ -11,8 +11,11 @@ import { v4 as uuidv4 } from "uuid";
 import prisma from "../utils/prisma";
 import { Prisma } from "@prisma/client";
 
-import { userInterface } from "../interfaces/user.interface";
-import { socialInterface } from "../interfaces/user.interface";
+import {
+  userInterface,
+  socialInterface,
+  contactInterface,
+} from "../interfaces/user.interface";
 
 // validate id
 const validateId = (id: string): string | null => {
@@ -45,9 +48,7 @@ const getUserProfileById = async (
         email: true,
         bio: true,
         socialLinks: true,
-        websiteURL: true,
         profileImage: true,
-        googleAccountID: true,
         displayName: true,
         firstName: true,
         lastName: true,
@@ -98,7 +99,7 @@ const updateUserProfileById = async (
   // destructuring the request body
 
   try {
-    const { firstName, lastName, displayName, bio, websiteURL, location } =
+    const { firstName, lastName, displayName, bio, location } =
       req.body as userInterface;
 
     // find the user by id
@@ -107,7 +108,6 @@ const updateUserProfileById = async (
       select: {
         userID: true,
         bio: true,
-        websiteURL: true,
         profileImage: true,
         displayName: true,
         firstName: true,
@@ -136,7 +136,6 @@ const updateUserProfileById = async (
         lastName,
         displayName,
         bio,
-        websiteURL,
         location,
       },
     });
@@ -175,14 +174,17 @@ const addSocialLinks = async (
   }
 
   try {
-    const { socialPlatform, linkURL } = req.body as socialInterface;
+    const { websiteURL, twitterURL, facebookURL, instagramURL } =
+      req.body as socialInterface;
 
     // update the social links table
     const sociallink = await prisma.socialLink.create({
       data: {
         userID,
-        socialPlatform,
-        linkURL,
+        websiteURL,
+        twitterURL,
+        facebookURL,
+        instagramURL,
       },
     });
 
@@ -218,8 +220,10 @@ const getSocialLinksByUserId = async (
       select: {
         linkID: true,
         userID: true,
-        socialPlatform: true,
-        linkURL: true,
+        websiteURL: true,
+        twitterURL: true,
+        facebookURL: true,
+        instagramURL: true,
       },
     });
 
@@ -261,14 +265,13 @@ const updateContactInformationByUserId = async (
   }
 
   try {
-    const { email, phoneNumber } = req.body as userInterface;
+    const { email } = req.body as contactInterface;
 
     // update the user profile
     const updatedUser = await prisma.user.update({
       where: { userID },
       data: {
         email,
-        phoneNumber,
       },
     });
 
