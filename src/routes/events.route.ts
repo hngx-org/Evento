@@ -5,11 +5,16 @@ import {
   getAllEventsController,
   editEventController,
 } from "../controllers/events.controller";
+import { upload } from "../services/events.service";
 
 const eventsRouter = Router();
 
 // Create a new event route
-eventsRouter.post("/events/create", createEventController);
+eventsRouter.post(
+  "/events/create",
+  upload.single("event-image"),
+  createEventController
+);
 
 // Get a single event route
 eventsRouter.get("/events/:eventID", getEventController);

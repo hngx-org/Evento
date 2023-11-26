@@ -39,6 +39,7 @@ model Event {
     eventID              String                 @id @unique @default(uuid())
     title                String
     description          String?
+    imageURL             String?
     startDate            DateTime
     endDate              DateTime
     time                 DateTime

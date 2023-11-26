@@ -7,6 +7,8 @@ import {
 // import { createEventsService } from "../services/events.service";
 import { BadRequestError, NotFoundError } from "../middlewares";
 import { ResponseHandler } from "../utils";
+import { cloudinary } from "../services/events.service";
+import { unlink } from "node:fs";
 
 const { event } = new PrismaClient();
 
@@ -27,6 +29,8 @@ const createEventController: RequestHandler = async (req, res, next) => {
       organizerID,
       categoryID,
     } = req.body as createEventsInterface;
+    // Destructure the image file from the request body
+    const { path } = req.file;
 
     // Check if there is an existing event with the same title as in the request title payload
     const existingEvent = await event.findFirst({
@@ -40,11 +44,31 @@ const createEventController: RequestHandler = async (req, res, next) => {
       throw new BadRequestError("An event with this title already exists.");
     }
 
+    // Upload the image to cloudinary
+    const uploadedImage = await cloudinary.uploader.upload(path, {
+      folder: "Evento",
+      use_filename: true,
+      unique_filename: false,
+      overwrite: true,
+    });
+
+    // Get the image URL
+    const imageURL = uploadedImage.secure_url;
+
+    // Delete the image from the uploads folder
+    unlink(path, (err) => {
+      if (err)
+        throw new BadRequestError(
+          "An error occurred while deleting the image."
+        );
+    });
+
     // Create an event
     const newEvent = await event.create({
       data: {
         title,
         description,
+        imageURL,
         startDate,
         endDate,
         time,
