@@ -13,8 +13,8 @@ import {
 const router: Router = express.Router();
 
 const storage = multer.memoryStorage();
-// const uploads = multer({ storage: storage }).single("file");
-const uploads = multer({ dest: "uploads/" }).single("file");
+const uploads = multer({ storage: storage }).single("file");
+// const uploads = multer({ dest: "uploads/" }).single("file");
 const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
   uploads(req, res, function (err) {
     if (err) {

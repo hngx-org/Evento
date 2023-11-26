@@ -2,36 +2,39 @@ const path = require("path");
 const cloudinary = require("cloudinary");
 const DataUri = require("datauri/parser");
 
+import "dotenv/config";
+
 export const cloudinaryService = async (
-  files: any,
+  file: any,
   service: any
 ): Promise<{ successful: boolean; message: string; urls: any[] }> => {
   try {
     cloudinary.config({
-      cloud_name: "ol4juwon",
-      api_key: "619781942963636",
-      api_secret: "8ZuIWrywiz5m6_6mLq_AYuHDeUo",
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    console.log(files);
+    console.log(file);
+
+    console.log("here Cloudinary");
 
     const urls = [];
 
     const dtauri = new DataUri();
 
-    for (const file of files) {
-      const dataUri = dtauri.format(
-        path.extname(file.originalname),
-        file.buffer
-      );
-      console.log("here");
+    // Loop removed since there's only one file
+    const dataUri = dtauri.format(path.extname(file.originalname), file.buffer);
+    console.log("here");
 
-      const final_file = dataUri.content;
+    const final_file = dataUri.content;
 
-      const image = await cloudinary.v2.uploader.upload_large(final_file);
+    const image = await cloudinary.v2.uploader.upload_large(final_file);
+    console.log(image);
 
-      urls.push(image.secure_url);
-    }
+    urls.push(image.secure_url);
+
+    return { successful: true, message: "file uploaded successfully", urls };
 
     return { successful: true, message: "files uploaded successfully", urls };
   } catch (error) {
