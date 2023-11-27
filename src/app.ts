@@ -6,11 +6,14 @@ import { errorHandler } from "./middlewares/index";
 import session from "express-session";
 import passport from "./utils/passport";
 import cors from "cors";
+import morgan from "morgan";
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
 
 const app = express();
+
+app.use(morgan("dev"));
 
 //  Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));

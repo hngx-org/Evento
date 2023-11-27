@@ -6,6 +6,10 @@ import { ResponseHandler } from "../utils/responsehandler";
 import passport from "../utils/passport";
 import { slugify } from "../services/slugify";
 import jwt from "jsonwebtoken";
+import * as OTPAuth from "otpauth";
+import { encode } from "hi-base32";
+import crypto from "crypto";
+
 interface CustomUser extends Express.User {
   userID: string;
 }
@@ -197,3 +201,247 @@ export const oauthToken = async (
 };
 
 // otp verification
+const generateRandomBase32 = () => {
+  const buffer = crypto.randomBytes(15);
+  const base32 = encode(buffer).replace(/=/g, "").substring(0, 24);
+  return base32;
+};
+// generate otp
+export const generateOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userID = req.params.id;
+    console.log(userID);
+    const user = await prisma.user.findUnique({
+      where: {
+        userID,
+      },
+      select: {
+        userID: true,
+        email: true,
+      },
+    });
+    if (!user) {
+      throw new BadRequestError("User does not exist");
+    }
+
+    console.log("here");
+    const base32_secret = generateRandomBase32();
+    const otp = new OTPAuth.TOTP({
+      issuer: "Evento",
+      label: user.email,
+      algorithm: "SHA1",
+      digits: 6,
+      secret: base32_secret,
+    });
+
+    console.log(otp.toString());
+
+    let otpauth_url = otp.toString();
+
+    await prisma.user.update({
+      where: { userID: user.userID },
+      data: {
+        otp_auth_url: otpauth_url,
+        otp_base32: base32_secret,
+      },
+    });
+
+    return ResponseHandler.success(
+      res,
+      otpauth_url,
+      200,
+      "OTP generated successfully"
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// verify otp
+export const verifyOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { token, userID } = req.body;
+    const user = await prisma.user.findUnique({
+      where: {
+        userID,
+      },
+      select: {
+        otp_auth_url: true,
+        otp_base32: true,
+      },
+    });
+    if (!user) {
+      throw new BadRequestError("User does not exist");
+    }
+
+    const otpauth_url = user.otp_auth_url;
+    const base32_secret = user.otp_base32;
+
+    const otpObj = new OTPAuth.TOTP({
+      issuer: "Evento",
+      label: otpauth_url,
+      algorithm: "SHA1",
+      digits: 6,
+      secret: base32_secret,
+    });
+
+    const isValid = otpObj.validate({ token: token });
+    if (!isValid) {
+      throw new BadRequestError("Invalid OTP");
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { userID: userID },
+      data: {
+        otp_enabled: true,
+        otp_verified: true,
+      },
+      select: {
+        otp_enabled: true,
+      },
+    });
+
+    // return data to the user
+    const validatedUser = await prisma.user.findUnique({
+      where: {
+        userID,
+      },
+      select: {
+        userID: true,
+        displayName: true,
+        email: true,
+        otp_enabled: true,
+        otp_verified: true,
+      },
+    });
+
+    return ResponseHandler.success(
+      res,
+      validatedUser,
+      200,
+      "OTP Enabled Successfully"
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// validate otp
+export const validateOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userID, token } = req.body;
+
+    if (!userID || !token) {
+      throw new BadRequestError("User ID and token are required");
+    }
+
+    console.log(userID, token);
+
+    const user = await prisma.user.findUnique({
+      where: {
+        userID: userID,
+      },
+      select: {
+        otp_auth_url: true,
+        otp_base32: true,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestError("User does not exist");
+    }
+
+    let otp = new OTPAuth.TOTP({
+      issuer: "Evento",
+      label: user.otp_auth_url,
+      algorithm: "SHA1",
+      digits: 6,
+      secret: user.otp_base32,
+    });
+
+    const isValid = otp.validate({ token, window: 1 });
+    if (!isValid) {
+      throw new BadRequestError("Invalid OTP");
+    }
+
+    const otp_valid = await prisma.user.update({
+      where: { userID: userID },
+      data: {
+        otp_enabled: true,
+        otp_verified: true,
+      },
+      select: {
+        userID: true,
+        displayName: true,
+        email: true,
+        otp_enabled: true,
+        otp_verified: true,
+      },
+    });
+
+    return ResponseHandler.success(
+      res,
+      otp_valid,
+      200,
+      "OTP validated successfully"
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// disable OTP
+export const disableOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userID = req.params.id;
+    const user = await prisma.user.findUnique({
+      where: {
+        userID,
+      },
+      select: {
+        userID: true,
+        otp_enabled: true,
+      },
+    });
+    if (!user) {
+      throw new BadRequestError("User does not exist");
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { userID: userID },
+      data: {
+        otp_enabled: false,
+        otp_verified: false,
+      },
+      select: {
+        userID: true,
+        otp_enabled: true,
+      },
+    });
+
+    return ResponseHandler.success(
+      res,
+      updatedUser,
+      200,
+      "OTP disabled successfully"
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
