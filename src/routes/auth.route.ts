@@ -338,5 +338,5 @@ router.post("/validate-otp", validateOTP);
  *               $ref: '#/components/schemas/Error'
  */
 
-router.post("/disable-otp", disableOTP);
+router.post("/disable-otp/:id", disableOTP);
 module.exports = router;
