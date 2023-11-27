@@ -40,8 +40,6 @@ model User {
     UserSupportTicket    UserSupportTicket[]
     Verification         Verification?
     signedUpEvents       Event[]                @relation("attendees")
-
-    @@map(name: "users")
 }
 
 model Event {

@@ -1,16 +1,27 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'USER');
+
 -- CreateTable
 CREATE TABLE "User" (
     "userID" TEXT NOT NULL,
-    "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "fullName" TEXT NOT NULL,
     "bio" TEXT,
     "socialLinks" TEXT,
-    "websiteURL" TEXT,
     "profileImage" TEXT,
     "googleAccountID" TEXT,
-    "role" TEXT NOT NULL,
+    "displayName" TEXT,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'USER',
+    "location" TEXT,
+    "otp_enabled" BOOLEAN NOT NULL DEFAULT false,
+    "otp_verified" BOOLEAN NOT NULL DEFAULT false,
+    "otp_ascii" TEXT,
+    "otp_hex" TEXT,
+    "otp_base32" TEXT,
+    "otp_auth_url" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("userID")
 );
@@ -20,7 +31,8 @@ CREATE TABLE "Event" (
     "eventID" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "date" TIMESTAMP(3) NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
     "time" TIMESTAMP(3) NOT NULL,
     "location" TEXT NOT NULL,
     "capacity" INTEGER NOT NULL,
@@ -31,18 +43,6 @@ CREATE TABLE "Event" (
     "categoryCategoryID" TEXT,
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("eventID")
-);
-
--- CreateTable
-CREATE TABLE "Participant" (
-    "participantID" TEXT NOT NULL,
-    "userID" TEXT NOT NULL,
-    "eventID" TEXT NOT NULL,
-    "role" TEXT NOT NULL,
-    "registrationStatus" TEXT,
-    "paymentStatus" TEXT,
-
-    CONSTRAINT "Participant_pkey" PRIMARY KEY ("participantID")
 );
 
 -- CreateTable
@@ -59,8 +59,10 @@ CREATE TABLE "Verification" (
 CREATE TABLE "SocialLink" (
     "linkID" TEXT NOT NULL,
     "userID" TEXT NOT NULL,
-    "socialPlatform" TEXT NOT NULL,
-    "linkURL" TEXT NOT NULL,
+    "websiteURL" TEXT,
+    "twitterURL" TEXT,
+    "facebookURL" TEXT,
+    "instagramURL" TEXT,
 
     CONSTRAINT "SocialLink_pkey" PRIMARY KEY ("linkID")
 );
@@ -73,7 +75,8 @@ CREATE TABLE "Ticket" (
     "ticketType" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
-    "saleStatus" TEXT NOT NULL,
+    "isPaid" BOOLEAN NOT NULL,
+    "isValid" BOOLEAN NOT NULL,
 
     CONSTRAINT "Ticket_pkey" PRIMARY KEY ("ticketID")
 );
@@ -145,7 +148,7 @@ CREATE TABLE "UserEventInteraction" (
     "interactionID" TEXT NOT NULL,
     "userID" TEXT NOT NULL,
     "eventID" TEXT NOT NULL,
-    "like" BOOLEAN NOT NULL,
+    "like" BOOLEAN NOT NULL DEFAULT false,
     "comment" TEXT,
 
     CONSTRAINT "UserEventInteraction_pkey" PRIMARY KEY ("interactionID")
@@ -182,20 +185,23 @@ CREATE TABLE "UserSupportTicket" (
     CONSTRAINT "UserSupportTicket_pkey" PRIMARY KEY ("ticketID")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_userID_key" ON "User"("userID");
+-- CreateTable
+CREATE TABLE "_attendees" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+CREATE UNIQUE INDEX "User_userID_key" ON "User"("userID");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Event_eventID_key" ON "Event"("eventID");
+CREATE UNIQUE INDEX "User_slug_key" ON "User"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Participant_participantID_key" ON "Participant"("participantID");
+CREATE UNIQUE INDEX "Event_eventID_key" ON "Event"("eventID");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SocialLink_linkID_key" ON "SocialLink"("linkID");
@@ -227,14 +233,17 @@ CREATE UNIQUE INDEX "PrivacySetting_privacySettingID_key" ON "PrivacySetting"("p
 -- CreateIndex
 CREATE UNIQUE INDEX "UserSupportTicket_ticketID_key" ON "UserSupportTicket"("ticketID");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "_attendees_AB_unique" ON "_attendees"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_attendees_B_index" ON "_attendees"("B");
+
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_categoryCategoryID_fkey" FOREIGN KEY ("categoryCategoryID") REFERENCES "Category"("categoryID") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Participant" ADD CONSTRAINT "Participant_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Participant" ADD CONSTRAINT "Participant_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("eventID") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Event" ADD CONSTRAINT "Event_organizerID_fkey" FOREIGN KEY ("organizerID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Verification" ADD CONSTRAINT "Verification_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -261,25 +270,31 @@ ALTER TABLE "Preferences" ADD CONSTRAINT "Preferences_userID_fkey" FOREIGN KEY (
 ALTER TABLE "Security" ADD CONSTRAINT "Security_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("eventID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserEventInteraction" ADD CONSTRAINT "UserEventInteraction_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserEventInteraction" ADD CONSTRAINT "UserEventInteraction_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("eventID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EventAnalytics" ADD CONSTRAINT "EventAnalytics_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("eventID") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserEventInteraction" ADD CONSTRAINT "UserEventInteraction_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PrivacySetting" ADD CONSTRAINT "PrivacySetting_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "EventAnalytics" ADD CONSTRAINT "EventAnalytics_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("eventID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PrivacySetting" ADD CONSTRAINT "PrivacySetting_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("eventID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "PrivacySetting" ADD CONSTRAINT "PrivacySetting_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "UserSupportTicket" ADD CONSTRAINT "UserSupportTicket_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("userID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_attendees" ADD CONSTRAINT "_attendees_A_fkey" FOREIGN KEY ("A") REFERENCES "Event"("eventID") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_attendees" ADD CONSTRAINT "_attendees_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userID") ON DELETE CASCADE ON UPDATE CASCADE;
