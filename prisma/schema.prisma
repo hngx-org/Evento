@@ -13,7 +13,6 @@ model User {
   password             String
   bio                  String?
   socialLinks          String?
-  websiteURL           String?
   profileImage         String?
   googleAccountID      String?
   displayName          String?
@@ -22,6 +21,12 @@ model User {
   slug                 String                 @unique
   role                 Role                   @default(USER)
   location             String?
+  otp_enabled          Boolean                @default(false)
+  otp_verified         Boolean                @default(false)
+  otp_ascii            String?
+  otp_hex              String?
+  otp_base32           String?
+  otp_auth_url         String?
   myEvents             Event[]
   PasswordReset        PasswordReset?
   Payment              Payment[]
@@ -37,28 +42,28 @@ model User {
 }
 
 model Event {
-    eventID              String                 @id @unique @default(uuid())
-    title                String
-    description          String?
-    startDate            DateTime
-    endDate              DateTime
-    time                 DateTime
-    location             String
-    capacity             Int
-    entranceFee          Float?
-    eventType            String
-    organizerID          String
-    categoryID           String?
-    categoryCategoryID   String?
-    Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
-    organizer            User                   @relation(fields: [organizerID], references: [userID])
-    eventAnalytics       EventAnalytics?
-    locations            Location[]
-    Payment              Payment[]
-    PrivacySetting       PrivacySetting[]
-    tickets              Ticket[]
-    UserEventInteraction UserEventInteraction[]
-    participants         User[]                 @relation("attendees")
+  eventID              String                 @id @unique @default(uuid())
+  title                String
+  description          String?
+  startDate            DateTime
+  endDate              DateTime
+  time                 DateTime
+  location             String
+  capacity             Int
+  entranceFee          Float?
+  eventType            String
+  organizerID          String
+  categoryID           String?
+  categoryCategoryID   String?
+  Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
+  organizer            User                   @relation(fields: [organizerID], references: [userID])
+  eventAnalytics       EventAnalytics?
+  locations            Location[]
+  Payment              Payment[]
+  PrivacySetting       PrivacySetting[]
+  tickets              Ticket[]
+  UserEventInteraction UserEventInteraction[]
+  participants         User[]                 @relation("attendees")
 }
 
 model Verification {
@@ -70,11 +75,13 @@ model Verification {
 }
 
 model SocialLink {
-  linkID         String @id @unique @default(uuid())
-  userID         String
-  socialPlatform String
-  linkURL        String
-  user           User   @relation(fields: [userID], references: [userID])
+  linkID       String  @id @unique @default(uuid())
+  userID       String
+  websiteURL   String?
+  twitterURL   String?
+  facebookURL  String?
+  instagramURL String?
+  user         User    @relation(fields: [userID], references: [userID])
 }
 
 model Ticket {
@@ -142,13 +149,13 @@ model Category {
 }
 
 model UserEventInteraction {
-    interactionID String  @id @unique @default(uuid())
-    userID        String
-    eventID       String
-    like          Boolean @default(false)
-    comment       String?
-    event         Event   @relation(fields: [eventID], references: [eventID])
-    user          User    @relation(fields: [userID], references: [userID])
+  interactionID String  @id @unique @default(uuid())
+  userID        String
+  eventID       String
+  like          Boolean @default(false)
+  comment       String?
+  event         Event   @relation(fields: [eventID], references: [eventID])
+  user          User    @relation(fields: [userID], references: [userID])
 }
 
 model EventAnalytics {

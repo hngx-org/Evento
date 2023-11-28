@@ -6,7 +6,6 @@ interface userInterface {
   lastName: string;
   displayName: string;
   bio?: string;
-  websiteURL?: string;
   profileImage?: string;
   googleAccountID?: string;
   slug?: string;
@@ -16,8 +15,15 @@ interface userInterface {
 
 interface socialInterface {
   userID: string;
-  socialPlatform: string;
-  linkURL: string;
+  websiteURL?: string;
+  twitterURL?: string;
+  facebookURL?: string;
+  instagramURL?: string;
 }
 
-export { userInterface, socialInterface };
+interface contactInterface {
+  userID: string;
+  email: string;
+}
+
+export { userInterface, socialInterface, contactInterface };

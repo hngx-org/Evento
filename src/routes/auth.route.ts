@@ -1,16 +1,70 @@
 import express, { Router, Request, Response, NextFunction } from "express";
-import { login, register, google, oauthToken } from "../controllers/auth.controller";
-import {authenticateJWT } from '../middlewares/auth';
-import passport from '../utils/passport';
+import {
+  login,
+  register,
+  google,
+  oauthToken,
+  generateOTP,
+  verifyOTP,
+  validateOTP,
+  disableOTP,
+} from "../controllers/auth.controller";
+import { authenticateJWT } from "../middlewares/auth";
+import passport from "../utils/passport";
 
 const router: Router = express.Router();
-
 
 /**
  * @swagger
  * tags:
  *   name: Authentication
  *   description: User authentication and authorization routes
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *         firstName:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *     UserResponse:
+ *       type: object
+ *       properties:
+ *         userID:
+ *           type: string
+ *         email:
+ *           type: string
+ *     LoginCredentials:
+ *       type: object
+ *       properties:
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *     LoginResponse:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
+ *     Error:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *     AuthorizationResponse:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
  */
 
 /**
@@ -40,8 +94,7 @@ const router: Router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 
-router.post('/register', register);
-
+router.post("/register", register);
 
 /**
  * @swagger
@@ -69,13 +122,11 @@ router.post('/register', register);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/login', login);
+router.post("/login", login);
 
-
-router.get('/login', (req, res) => {
-    res.send('Login page');
-});  
-
+router.get("/login", (req, res) => {
+  res.send("Login page");
+});
 
 /**
  * @swagger
@@ -98,12 +149,15 @@ router.get('/login', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/google', google);
+router.get("/google", google);
 
-router.get('/auth/google/callback', 
-  passport.authenticate('google', { successRedirect: '/', 
-  failureRedirect: 'http://localhost:3000/api/v1/login' }));
-
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "https://evento1.vercel.app/event-dashboard",
+    failureRedirect: "https://evento1.vercel.app/",
+  })
+);
 
 /**
  * @swagger
@@ -126,13 +180,14 @@ router.get('/auth/google/callback',
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/logout', function(req, res, next){
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    res.redirect('/');
+router.get("/logout", function (req, res, next) {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("https://evento1.vercel.app");
   });
 });
-
 
 /**
  * @swagger
@@ -156,12 +211,132 @@ router.get('/logout', function(req, res, next){
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/authorize', oauthToken);
+router.get("/authorize", oauthToken);
 
-
-
-router.get('/protected', authenticateJWT, (req, res) => {
-  res.send({msg: 'I am protected and you are authorized'});
+router.get("/protected", authenticateJWT, (req, res) => {
+  res.send({ msg: "I am protected and you are authorized" });
 });
 
+/**
+ * @swagger
+ * /api/v1/generate-otp/{id}:
+ *   get:
+ *     summary: Generate OTP for a user
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: User ID for OTP generation
+ *     responses:
+ *       '200':
+ *         description: OTP generated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP generated successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.get("/generate-otp/:id", generateOTP);
+/**
+ * @swagger
+ * /api/v1/verify-otp:
+ *   post:
+ *     summary: Verify OTP for a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *               userID:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP verified successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.post("/verify-otp", verifyOTP);
+/**
+ * @swagger
+ * /api/v1/validate-otp:
+ *   post:
+ *     summary: Validate OTP for a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userID:
+ *                 type: string
+ *               token:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OTP validated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP validated successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.post("/validate-otp", validateOTP);
+/**
+ * @swagger
+ * /api/v1/disable-otp/{id}:
+ *   post:
+ *     summary: Disable OTP for a user
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: User ID for OTP disabling
+ *     responses:
+ *       '200':
+ *         description: OTP disabled successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP disabled successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.post("/disable-otp/:id", disableOTP);
 module.exports = router;

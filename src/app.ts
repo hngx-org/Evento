@@ -5,11 +5,15 @@ import "dotenv/config";
 import { errorHandler } from "./middlewares/index";
 import session from "express-session";
 import passport from "./utils/passport";
+import cors from "cors";
+import morgan from "morgan";
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
 
 const app = express();
+
+app.use(morgan("dev"));
 
 //  Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
@@ -18,6 +22,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret",

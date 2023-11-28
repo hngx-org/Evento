@@ -14,7 +14,7 @@ const options = {
         description: "Local server",
       },
       {
-        url: "https://your-live-server-url.com/",
+        url: "https://evento-qo6d.onrender.com/",
         description: "Live server",
       },
     ],
