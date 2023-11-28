@@ -204,10 +204,44 @@ const editEventController: RequestHandler = async (req, res, next) => {
   }
 };
 
+// Controller for deleting events
+const deleteEventController: RequestHandler = async (req, res, next) => {
+  try {
+    // Destructure the event ID from the request params
+    const { eventID } = req.params;
+
+    // Delete the event
+    const deletedEvent = await event.delete({
+      where: { eventID },
+      select: {
+        eventID: true,
+        title: true,
+        description: true,
+      },
+    });
+
+    // Throw an error if the event is not found
+    if (!deletedEvent) {
+      throw new NotFoundError("Event not found.");
+    }
+
+    // Return the deleted event as the response
+    ResponseHandler.success(
+      res,
+      deletedEvent,
+      200,
+      "Event deleted successfully."
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   uploadEventImageController,
   createEventController,
   getEventController,
   getAllEventsController,
   editEventController,
+  deleteEventController,
 };
