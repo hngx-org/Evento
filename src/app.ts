@@ -7,6 +7,7 @@ import session from "express-session";
 import passport from "./utils/passport";
 import cors from "cors";
 import morgan from "morgan";
+import { authenticateJWT } from "./middlewares/auth";
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
@@ -37,9 +38,14 @@ app.use(passport.session());
 // app.use(authToken);
 
 //serve all routes dynamically using readdirsync
-readdirSync("./src/routes").map((path) =>
-  app.use("/api/v1", require(`./routes/${path}`))
-);
+readdirSync("./src/routes").map((path) => {
+  if (!path.includes("auth")) {
+    //   app.use("/api/v1/", authenticateJWT, require(`./routes/${path}`));
+    app.use("/api/v1/", require(`./routes/${path}`));
+  } else {
+    app.use("/api/v1/", require(`./routes/${path}`));
+  }
+});
 app.get("/", sayHelloController);
 app.use(errorHandler);
 const port = process.env.PORT || 3000;
