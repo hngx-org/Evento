@@ -154,8 +154,8 @@ router.get("/google", google);
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: "/",
-    failureRedirect: "http://localhost:3000/api/v1/login",
+    successRedirect: "https://evento1.vercel.app/event-dashboard",
+    failureRedirect: "https://evento1.vercel.app/",
   })
 );
 
@@ -185,7 +185,7 @@ router.get("/logout", function (req, res, next) {
     if (err) {
       return next(err);
     }
-    res.redirect("/");
+    res.redirect("https://evento1.vercel.app");
   });
 });
 
