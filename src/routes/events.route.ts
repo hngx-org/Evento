@@ -1,12 +1,22 @@
 import { Router } from "express";
 import {
+  uploadEventImageController,
   createEventController,
   getEventController,
   getAllEventsController,
   editEventController,
+  deleteEventController,
 } from "../controllers/events.controller";
+import { upload } from "../services/events.service";
 
 const eventsRouter = Router();
+
+// Upload event image route
+eventsRouter.post(
+  "/events/upload",
+  upload.single("event-image"),
+  uploadEventImageController
+);
 
 // Create a new event route
 eventsRouter.post("/events/create", createEventController);
@@ -19,6 +29,9 @@ eventsRouter.get("/events", getAllEventsController);
 
 // Edit an event route
 eventsRouter.put("/events/edit/:eventID", editEventController);
+
+// Delete an event route
+eventsRouter.delete("/events/delete/:eventID", deleteEventController);
 
 /**
  * @swagger
@@ -35,6 +48,36 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  * tags:
  *   name: Events
  *   description: Events Endpoints
+ *
+ * /api/v1/events/upload:
+ *   post:
+ *     summary: Upload an event image
+ *     tags: [Events]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               event-image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       '200':
+ *         description: Image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 imageURL:
+ *                   type: string
+ *                   format: uri
+ *                   description: The URL of the uploaded image
+ *               example:
+ *                 imageURL: "https://example.com/image.jpg"
+ *
  * /api/v1/events/create:
  *   post:
  *     summary: Create a new event
@@ -48,12 +91,13 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *           schema:
  *             $ref: '#/components/schemas/EventRequest'
  *     responses:
- *       201:
+ *       '201':
  *         description: The event was successfully created
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/EventResponse'
+ *
  * /api/v1/events:
  *   get:
  *     summary: Get all events
@@ -61,12 +105,13 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *     security:
  *       - BearerAuth: []
  *     responses:
- *       200:
+ *       '200':
  *         description: The list of all events
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/EventResponse'
+ *
  * /api/v1/events/{eventID}:
  *   get:
  *     summary: Get an event by ID
@@ -82,18 +127,19 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *         required: true
  *         description: The event ID
  *     responses:
- *       200:
+ *       '200':
  *         description: The event description by ID
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/EventResponse'
- *       404:
+ *       '404':
  *         description: The event was not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundErrorResponse'
+ *
  * /api/v1/events/edit/{eventID}:
  *   put:
  *     summary: Update an event
@@ -115,7 +161,7 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *           schema:
  *             $ref: '#/components/schemas/EventRequest'
  *     responses:
- *       200:
+ *       '200':
  *         description: The event was successfully updated
  *         content:
  *           application/json:
@@ -147,7 +193,60 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *                 message:
  *                   type: string
  *                   description: A message describing the response
- *       404:
+ *       '404':
+ *         description: The event was not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundErrorResponse'
+ *
+ * /api/v1/events/delete/{eventID}:
+ *   delete:
+ *     summary: Delete an event by ID
+ *     tags:
+ *       - Events
+ *     parameters:
+ *       - in: path
+ *         name: eventID
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         required: true
+ *         description: The ID of the event to be deleted
+ *     responses:
+ *       '200':
+ *         description: Event deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   description: The date and time of the response in ISO 8601 format
+ *                 success:
+ *                   type: boolean
+ *                   description: Whether the request was successful or not
+ *                 status:
+ *                   type: number
+ *                   description: The status code of the response
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     eventID:
+ *                       type: number
+ *                       description: The event ID
+ *                     title:
+ *                       type: string
+ *                       description: The event title
+ *                     description:
+ *                       type: string
+ *                       description: The event description
+ *                 message:
+ *                   type: string
+ *                   description: A message describing the response
+ *       '404':
  *         description: The event was not found
  *         content:
  *           application/json:
@@ -183,6 +282,9 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *                 type: string
  *               description:
  *                 type: string
+ *               imageURL:
+ *                 type: string
+ *                 format: uri
  *               startDate:
  *                 type: string
  *               endDate:
@@ -211,6 +313,7 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *           - eventID: 1
  *             title: "Event 1"
  *             description: "Event 1 description"
+ *             imageURL: "https://example.com/image.jpg"
  *             startDate: "2021-01-01"
  *             endDate: "2021-01-01"
  *             time: "12:00:00"
@@ -229,6 +332,10 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *         description:
  *           type: string
  *           description: The event description
+ *         imageURL:
+ *           type: string
+ *           format: uri
+ *           description: The event image URL
  *         startDate:
  *           type: string
  *           format: date-time
@@ -262,6 +369,7 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *       example:
  *         title: "Event 1"
  *         description: "Event 1 description"
+ *         imageURL: "https://example.com/image.jpg"
  *         startDate: "2023-11-19T12:30:00.000Z"
  *         endDate: "2023-11-22T01:00:00.000Z"
  *         time: "2023-11-19T12:00:00.000Z"
@@ -269,7 +377,7 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *         capacity: 100
  *         entranceFee: 1000
  *         eventType: "Event 1 type"
- *         organizerID: "170ecf2e-996c-4525-ad04-5b2c471d5c0a"
+ *         organizerID: "ab73f292-9267-4167-81f2-d85e9bd950d3"
  *     NotFoundErrorResponse:
  *       type: object
  *       properties:

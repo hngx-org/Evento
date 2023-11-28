@@ -47,9 +47,7 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
  *         bio:
  *           type: string
  *         socialLinks:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/SocialLinkResponse'
+ *           type: string
  *         websiteURL:
  *           type: string
  *         profileImage:
@@ -184,7 +182,7 @@ router.get("/user/profile/:id", getUserProfileById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserProfileUpdateRequest'
+ *             type: string
  *     responses:
  *       200:
  *         description: Successful response
@@ -217,14 +215,14 @@ router.patch("/user/profile/edit/:id", updateUserProfileById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/SocialLinkRequest'
+ *             type: string
  *     responses:
  *       200:
  *         description: Successful response
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SocialLinkResponse'
+ *               type: string
  */
 router.post("/user/profile/social/add/:id", addSocialLinks);
 
@@ -250,7 +248,7 @@ router.post("/user/profile/social/add/:id", addSocialLinks);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SocialLinkListResponse'
+ *               type: string
  */
 router.get("/user/profile/social/:id", getSocialLinksByUserId);
 
