@@ -2,6 +2,7 @@
 interface createEventsInterface {
   title: string;
   description?: string;
+  imageURL?: string;
   startDate: Date;
   endDate: Date;
   time: Date;
