@@ -12,36 +12,15 @@ import { unlink } from "node:fs";
 
 const { event } = new PrismaClient();
 
-// Controller for creating events
-const createEventController: RequestHandler = async (req, res, next) => {
+// Controller for uploading event image
+const uploadEventImageController: RequestHandler = async (req, res, next) => {
   try {
-    // Destructure payload from the request body
-    const {
-      title,
-      description,
-      startDate,
-      endDate,
-      time,
-      location,
-      capacity,
-      entranceFee,
-      eventType,
-      organizerID,
-      categoryID,
-    } = req.body as createEventsInterface;
     // Destructure the image file from the request body
     const { path } = req.file;
 
-    // Check if there is an existing event with the same title as in the request title payload
-    const existingEvent = await event.findFirst({
-      where: {
-        title,
-      },
-    });
-
-    // If there is an existing event with the same title, throw an error
-    if (existingEvent) {
-      throw new BadRequestError("An event with this title already exists.");
+    // Check if the image file is not present in the request body
+    if (!path) {
+      throw new BadRequestError("Please upload an image.");
     }
 
     // Upload the image to cloudinary
@@ -62,6 +41,49 @@ const createEventController: RequestHandler = async (req, res, next) => {
           "An error occurred while deleting the image."
         );
     });
+
+    // Return the image URL as the response
+    ResponseHandler.success(
+      res,
+      { imageURL },
+      200,
+      "Image uploaded successfully."
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Controller for creating events
+const createEventController: RequestHandler = async (req, res, next) => {
+  try {
+    // Destructure payload from the request body
+    const {
+      title,
+      description,
+      imageURL,
+      startDate,
+      endDate,
+      time,
+      location,
+      capacity,
+      entranceFee,
+      eventType,
+      organizerID,
+      categoryID,
+    } = req.body as createEventsInterface;
+
+    // Check if there is an existing event with the same title as in the request title payload
+    const existingEvent = await event.findFirst({
+      where: {
+        title,
+      },
+    });
+
+    // If there is an existing event with the same title, throw an error
+    if (existingEvent) {
+      throw new BadRequestError("An event with this title already exists.");
+    }
 
     // Create an event
     const newEvent = await event.create({
@@ -147,18 +169,6 @@ const editEventController: RequestHandler = async (req, res, next) => {
       categoryID,
     } = req.body as editEventsInterface;
 
-    // Check if there is an existing event with the same title as in the request title payload
-    // const existingEvent = await event.findFirst({
-    //   where: {
-    //     title,
-    //   },
-    // });
-
-    // If there is an existing event with the same title, throw an error
-    // if (existingEvent) {
-    //   throw new BadRequestError("An event with this title already exists.");
-    // }
-
     // Update the event
     const updatedEvent = await event.update({
       where: { eventID },
@@ -195,6 +205,7 @@ const editEventController: RequestHandler = async (req, res, next) => {
 };
 
 export {
+  uploadEventImageController,
   createEventController,
   getEventController,
   getAllEventsController,
