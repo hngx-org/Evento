@@ -4,6 +4,10 @@ import {
   register,
   google,
   oauthToken,
+  generateOTP,
+  verifyOTP,
+  validateOTP,
+  disableOTP,
 } from "../controllers/auth.controller";
 import { authenticateJWT } from "../middlewares/auth";
 import passport from "../utils/passport";
@@ -213,4 +217,126 @@ router.get("/protected", authenticateJWT, (req, res) => {
   res.send({ msg: "I am protected and you are authorized" });
 });
 
+/**
+ * @swagger
+ * /api/v1/generate-otp/{id}:
+ *   get:
+ *     summary: Generate OTP for a user
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: User ID for OTP generation
+ *     responses:
+ *       '200':
+ *         description: OTP generated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP generated successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.get("/generate-otp/:id", generateOTP);
+/**
+ * @swagger
+ * /api/v1/verify-otp:
+ *   post:
+ *     summary: Verify OTP for a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *               userID:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP verified successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.post("/verify-otp", verifyOTP);
+/**
+ * @swagger
+ * /api/v1/validate-otp:
+ *   post:
+ *     summary: Validate OTP for a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userID:
+ *                 type: string
+ *               token:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OTP validated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP validated successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.post("/validate-otp", validateOTP);
+/**
+ * @swagger
+ * /api/v1/disable-otp/{id}:
+ *   post:
+ *     summary: Disable OTP for a user
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: User ID for OTP disabling
+ *     responses:
+ *       '200':
+ *         description: OTP disabled successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP disabled successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.post("/disable-otp/:id", disableOTP);
 module.exports = router;
