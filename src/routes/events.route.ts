@@ -35,6 +35,16 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ */
+
+/**
+ * @swagger
  * tags:
  *   name: Events
  *   description: Events Endpoints
@@ -72,6 +82,8 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *   post:
  *     summary: Create a new event
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -90,6 +102,8 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *   get:
  *     summary: Get all events
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       '200':
  *         description: The list of all events
@@ -102,6 +116,8 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *   get:
  *     summary: Get an event by ID
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: eventID
@@ -128,6 +144,8 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *   put:
  *     summary: Update an event
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: eventID
