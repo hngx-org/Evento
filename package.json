@@ -32,6 +32,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/passport-google-oauth20": "^2.0.14",
     "@types/passport-local": "^1.0.38",
+    "@types/ping": "^0.4.4",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cloudinary": "^1.41.0",
@@ -49,6 +50,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "ping": "^0.4.4",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.1"
