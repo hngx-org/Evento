@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import bycript from "bcryptjs";
 import prisma from "../utils/prisma";
 import { BadRequestError, UnauthorizedError } from "../middlewares";
@@ -14,7 +14,7 @@ interface CustomUser extends Express.User {
   userID: string;
 }
 
-export const register = async (
+export const register: RequestHandler = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -52,7 +52,7 @@ export const register = async (
 
     const user = await prisma.user.findUnique({
       where: {
-        email,
+        email: email,
       },
     });
     if (user) {
@@ -102,7 +102,7 @@ export const login = async (
       const userWithoutPassword = {
         id: user.userID,
       };
-      const token = jwt.sign(userWithoutPassword, "your_secret_key", {
+      const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
       if (err) {
@@ -172,7 +172,7 @@ function generateToken(user: any): string {
   };
   return jwt.sign(
     userWithoutPassword,
-    (process.env.JWT_SECRET_KEY as string) || "secret",
+    process.env.JWT_SECRET as string,
     { expiresIn: "1h" }
   );
 }
@@ -185,7 +185,7 @@ export const oauthToken = async (
   try {
     const user = req.user as CustomUser;
     if (req.user) {
-      const token = generateToken(user.userID);
+      const token = generateToken(user);
       return ResponseHandler.success(
         res,
         { userId: user.userID, token },
