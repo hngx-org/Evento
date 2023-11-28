@@ -8,6 +8,8 @@ import passport from "./utils/passport";
 import cors from "cors";
 import morgan from "morgan";
 import { authenticateJWT } from "./middlewares/auth";
+import cron from "node-cron";
+import http from "http";
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
@@ -18,6 +20,12 @@ app.use(morgan("dev"));
 
 //  Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
+
+// cron job to ping the server every 30 minutes
+cron.schedule("30 * * * *", () => {
+  http.get("https://evento-qo6d.onrender.com/");
+  console.log("pinging the server every minute");
+});
 
 // middleware setup
 
