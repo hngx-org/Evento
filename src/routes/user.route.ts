@@ -101,6 +101,10 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
  *       type: array
  *       items:
  *         $ref: '#/components/schemas/SocialLinkResponse'
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
  */
 
 /**
@@ -110,6 +114,8 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
  *     summary: Get User Profile by ID
  *     description: Retrieve user profile details by user ID.
  *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -163,6 +169,8 @@ router.get("/user/profile/:id", getUserProfileById);
  *     summary: Update User Profile by ID
  *     description: Update user profile details by user ID.
  *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -194,6 +202,8 @@ router.patch("/user/profile/edit/:id", updateUserProfileById);
  *     summary: Add Social Links to User Profile
  *     description: Add social links to the user profile by user ID.
  *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -225,6 +235,8 @@ router.post("/user/profile/social/add/:id", addSocialLinks);
  *     summary: Get Social Links by User ID
  *     description: Retrieve social links associated with the user profile by user ID.
  *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -250,6 +262,8 @@ router.get("/user/profile/social/:id", getSocialLinksByUserId);
  *       summary: Upload a profile image for a user.
  *       description: Uploads a profile image for the specified user ID.
  *       tags: [User]
+ *       security:
+ *         - BearerAuth: []
  *       parameters:
  *         - in: path
  *           name: id

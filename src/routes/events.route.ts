@@ -22,6 +22,16 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ */
+
+/**
+ * @swagger
  * tags:
  *   name: Events
  *   description: Events Endpoints
@@ -29,6 +39,8 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *   post:
  *     summary: Create a new event
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -46,6 +58,8 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *   get:
  *     summary: Get all events
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: The list of all events
@@ -57,6 +71,8 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *   get:
  *     summary: Get an event by ID
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: eventID
@@ -82,6 +98,8 @@ eventsRouter.put("/events/edit/:eventID", editEventController);
  *   put:
  *     summary: Update an event
  *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: eventID

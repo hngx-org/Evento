@@ -58,8 +58,8 @@ app.use(passport.session());
 //serve all routes dynamically using readdirsync
 readdirSync("./src/routes").map((path) => {
   if (!path.includes("auth")) {
-    //   app.use("/api/v1/", authenticateJWT, require(`./routes/${path}`));
-    app.use("/api/v1/", require(`./routes/${path}`));
+    app.use("/api/v1/", authenticateJWT, require(`./routes/${path}`));
+    // app.use("/api/v1/", require(`./routes/${path}`));
   } else {
     app.use("/api/v1/", require(`./routes/${path}`));
   }
