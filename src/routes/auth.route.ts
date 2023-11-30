@@ -212,6 +212,7 @@ router.get("/logout", function (req, res, next) {
  *               $ref: '#/components/schemas/Error'
  */
 router.get("/authorize", oauthToken);
+router.post("/authorize", oauthToken);
 
 router.get("/protected", authenticateJWT, (req, res) => {
   res.send({ msg: "I am protected and you are authorized" });
