@@ -82,6 +82,9 @@ passport.use(new GoogleStrtegy({
         const user = await prisma.user.findUnique({
             where: {
                 email: profile.emails[0].value
+            },
+            select: {
+                userID: true
             }
         });
 
@@ -102,12 +105,12 @@ passport.use(new GoogleStrtegy({
                     slug: slug
                 }
             });
-            const userWithoutPassword = {
+            const user = {
                 id: newUser.userID
             }
             
 
-            return done(null, userWithoutPassword);
+            return done(null, user);
         }
     } catch (err) {
         return done(err, false);
@@ -116,6 +119,7 @@ passport.use(new GoogleStrtegy({
 ));
 
 passport.serializeUser(function(user: User, done) {
+    console.log(user)
     done(null, user.userID);
 });
 
@@ -137,8 +141,5 @@ passport.deserializeUser(function(id: string, done) {
         done(err, false);
     });
 })
-
-
-
 
 export default passport;
