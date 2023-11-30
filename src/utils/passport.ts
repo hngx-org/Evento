@@ -105,12 +105,12 @@ passport.use(new GoogleStrtegy({
                     slug: slug
                 }
             });
-            const user = {
-                id: newUser.userID
+            const userWithoutPassword = {
+                userID: newUser.userID
             }
             
 
-            return done(null, user);
+            return done(null, userWithoutPassword);
         }
     } catch (err) {
         return done(err, false);
@@ -119,14 +119,13 @@ passport.use(new GoogleStrtegy({
 ));
 
 passport.serializeUser(function(user: User, done) {
-    console.log(user)
     done(null, user.userID);
 });
 
-passport.deserializeUser(function(id: string, done) {
+passport.deserializeUser(function(userID: string, done) {
     prisma.user.findUnique({
         where: {
-            userID: id,
+            userID: userID,
         },
         select: {
             userID: true,

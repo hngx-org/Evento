@@ -183,7 +183,7 @@ export const oauthToken = async (
   next: NextFunction
 ) => {
   try {
-    console.log(req.user);
+
     const user = req.user as CustomUser;
     if (req.user) {
       const token = generateToken(user);
