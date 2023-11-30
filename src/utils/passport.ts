@@ -73,9 +73,9 @@ passport.use(new LocalStrategy( {
 ));
 
 passport.use(new GoogleStrtegy({
-    clientID: '282222298725-sa5bch4lae40vsjajc6ungab96jfffsd.apps.googleusercontent.com',
-    clientSecret: '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',
-    callbackURL: 'http://localhost:3000/api/v1/auth/google/callback'
+    clientID: '282222298725-o43ne05ehbf3e4259ib5vdtoe044o7m3.apps.googleusercontent.com',
+    clientSecret: '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',
+    callbackURL: 'https://evento-qo6d.onrender.com/api/v1/auth/google/callback'
   },
   async function(accessToken, refreshToken, profile, done) {
     try {
@@ -105,12 +105,12 @@ passport.use(new GoogleStrtegy({
                     slug: slug
                 }
             });
-            const user = {
+            const userWithoutPassword = {
                 userID: newUser.userID
             }
             
 
-            return done(null, user);
+            return done(null, userWithoutPassword);
         }
     } catch (err) {
         return done(err, false);
@@ -118,15 +118,14 @@ passport.use(new GoogleStrtegy({
 }
 ));
 
-passport.serializeUser(function(user: User , done) {
-    console.log(user)
+passport.serializeUser(function(user: User, done) {
     done(null, user.userID);
 });
 
-passport.deserializeUser(function(id: string, done) {
+passport.deserializeUser(function(userID: string, done) {
     prisma.user.findUnique({
         where: {
-            userID: id,
+            userID: userID,
         },
         select: {
             userID: true,
