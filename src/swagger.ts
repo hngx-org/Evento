@@ -22,6 +22,20 @@ const options = {
       name: "Apache 2.0",
       url: "https://www.apache.org/licenses/LICENSE-2.0.html",
     },
+    // components: {
+    //   securitySchemes: {
+    //     bearerAuth: {
+    //       type: "http",
+    //       scheme: "bearer",
+    //       bearerFormat: "JWT",
+    //     },
+    //   },
+    // },
+    // security: [
+    //   {
+    //     bearerAuth: [],
+    //   },
+    // ],
   },
   apis: ["./src/routes/*.route.ts"],
 };

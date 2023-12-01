@@ -162,7 +162,7 @@ router.get(
 /**
  * @swagger
  * /api/v1/logout:
- *   get:
+ *   delete:
  *     summary: Log out the current user
  *     tags: [Authentication]
  *     responses:
@@ -180,13 +180,17 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/logout", function (req, res, next) {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-    res.redirect("https://evento1.vercel.app");
-  });
+router.delete("/logout", function (req, res, next) {
+  console.log("loging out");
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) {
+        return next(err);
+      }
+      console.log("session destroyed");
+      return res.redirect("https://evento1.vercel.app");
+    });
+  }
 });
 
 /**
