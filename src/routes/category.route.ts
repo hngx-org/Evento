@@ -17,22 +17,10 @@ categoryRouter.get(
 
 /**
  * @swagger
- * components:
- *   schemas:
- *   securitySchemes:
- *     BearerAuth:
- *       type: http
- *       scheme: bearer
- */
-
-/**
- * @swagger
  * /api/v1/categories:
  *   get:
  *     summary: Get all categories
  *     tags: [Categories]
- *     security:
- *       - BearerAuth: []
  *     responses:
  *       '200':
  *         description: Categories found successfully
@@ -61,8 +49,6 @@ categoryRouter.get(
  *   get:
  *     summary: Get events by category
  *     tags: [Categories]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: categoryID
