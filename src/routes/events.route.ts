@@ -386,16 +386,16 @@ eventsRouter.post("/events/register", registerForEventController);
  *         status: 200
  *         data:
  *           - eventID: 1
- *             title: "Event 1"
- *             description: "Event 1 description"
+ *             title: "Event"
+ *             description: "Event description"
  *             imageURL: "https://example.com/image.jpg"
  *             startDate: "2021-01-01"
  *             endDate: "2021-01-01"
  *             time: "12:00:00"
- *             location: "Event 1 location"
+ *             location: "Event location"
  *             capacity: 100
  *             entranceFee: 1000
- *             eventType: "Event 1 type"
+ *             eventType: "Event type"
  *             organizerID: 1
  *         message: "Sample success message"
  *     EventRequest:
@@ -438,21 +438,22 @@ eventsRouter.post("/events/register", registerForEventController);
  *         organizerID:
  *           type: number
  *           description: The event organizer ID
- *         categoryID:
- *           type: number
- *           description: The event category ID
+ *         categoryName:
+ *           type: string
+ *           description: The event category name
  *       example:
- *         title: "Event 1"
- *         description: "Event 1 description"
+ *         title: "Event"
+ *         description: "Event description"
  *         imageURL: "https://example.com/image.jpg"
  *         startDate: "2023-11-19T12:30:00.000Z"
  *         endDate: "2023-11-22T01:00:00.000Z"
  *         time: "2023-11-19T12:00:00.000Z"
- *         location: "Event 1 location"
+ *         location: "Event location"
  *         capacity: 100
  *         entranceFee: 1000
- *         eventType: "Event 1 type"
+ *         eventType: "Event type"
  *         organizerID: "ab73f292-9267-4167-81f2-d85e9bd950d3"
+ *         categoryName: "Tech"
  *     NotFoundErrorResponse:
  *       type: object
  *       properties:
