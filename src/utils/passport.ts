@@ -4,6 +4,7 @@ import { Strategy as GoogleStrtegy } from 'passport-google-oauth20';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import prisma from './prisma';
+import "dotenv/config";
 import { slugify } from '../services/slugify';
 import { UnauthorizedError } from '../middlewares';
 
@@ -45,7 +46,7 @@ passport.use(new JwtStrategy(options, async (jwt_payload, done) => {
 passport.use(new LocalStrategy( {
     usernameField: 'email',
     passwordField: 'password',
-    session: false
+    session: true
   },
   function(email, password, done) {
     prisma.user.findUnique({
@@ -73,9 +74,9 @@ passport.use(new LocalStrategy( {
 ));
 
 passport.use(new GoogleStrtegy({
-    clientID: '282222298725-o43ne05ehbf3e4259ib5vdtoe044o7m3.apps.googleusercontent.com',
-    clientSecret: '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',
-    callbackURL: 'https://evento-qo6d.onrender.com/api/v1/auth/google/callback'
+    clientID: '282222298725-sa5bch4lae40vsjajc6ungab96jfffsd.apps.googleusercontent.com',
+    clientSecret: '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',
+    callbackURL: 'http://localhost:3000/api/v1/auth/google/callback'
   },
   async function(accessToken, refreshToken, profile, done) {
     try {
