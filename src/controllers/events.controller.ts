@@ -70,7 +70,7 @@ const createEventController: RequestHandler = async (req, res, next) => {
       entranceFee,
       eventType,
       organizerID,
-      categoryID,
+      categoryName,
     } = req.body as createEventsInterface;
 
     // Check if there is an existing event with the same title as in the request title payload
@@ -98,8 +98,33 @@ const createEventController: RequestHandler = async (req, res, next) => {
         capacity,
         entranceFee,
         eventType,
-        organizerID,
-        categoryID,
+        organizer: {
+          connect: {
+            userID: organizerID,
+          },
+        },
+        Category: {
+          connectOrCreate: {
+            where: {
+              name: categoryName,
+            },
+            create: {
+              name: categoryName,
+            },
+          },
+        },
+      },
+      include: {
+        organizer: {
+          select: {
+            userID: true,
+            email: true,
+            profileImage: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Category: true,
       },
     });
 
@@ -120,6 +145,27 @@ const getEventController: RequestHandler = async (req, res, next) => {
     const foundEvent = await event.findFirst({
       where: {
         eventID,
+      },
+      include: {
+        organizer: {
+          select: {
+            userID: true,
+            email: true,
+            profileImage: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        participants: {
+          select: {
+            userID: true,
+            email: true,
+            profileImage: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        Category: true,
       },
     });
 
@@ -146,7 +192,8 @@ const getAllEventsController: RequestHandler = async (req, res, next) => {
             userID: true,
             email: true,
             profileImage: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
           },
         },
       },
@@ -177,7 +224,7 @@ const editEventController: RequestHandler = async (req, res, next) => {
       entranceFee,
       eventType,
       organizerID,
-      categoryID,
+      categoryName,
     } = req.body as editEventsInterface;
 
     // Update the event
@@ -193,13 +240,27 @@ const editEventController: RequestHandler = async (req, res, next) => {
         capacity,
         entranceFee,
         eventType,
-        organizerID,
-        categoryID,
+        organizer: {
+          connect: {
+            userID: organizerID,
+          },
+        },
+        Category: {
+          connectOrCreate: {
+            where: {
+              name: categoryName,
+            },
+            create: {
+              name: categoryName,
+            },
+          },
+        },
       },
       select: {
         eventID: true,
         title: true,
         description: true,
+        Category: true,
       },
     });
 
@@ -301,9 +362,11 @@ const registerForEventController: RequestHandler = async (req, res, next) => {
             userID: true,
             email: true,
             profileImage: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
           },
         },
+        Category: true,
       },
     });
 

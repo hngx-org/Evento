@@ -54,7 +54,6 @@ model Event {
     entranceFee          Float?
     eventType            String
     organizerID          String
-    categoryID           String?
     categoryCategoryID   String?
     Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
     organizer            User                   @relation(fields: [organizerID], references: [userID])
@@ -145,7 +144,7 @@ model Payment {
 
 model Category {
   categoryID String  @id @unique @default(uuid())
-  name       String
+  name       String  @unique 
   events     Event[]
 }
 

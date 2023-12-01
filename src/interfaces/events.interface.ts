@@ -11,7 +11,7 @@ interface createEventsInterface {
   entranceFee?: number;
   eventType: string;
   organizerID: string;
-  categoryID?: string;
+  categoryName?: string;
 }
 
 interface editEventsInterface extends createEventsInterface {}
