@@ -44,7 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret",
+    secret: process.env.JWT_SECRET || "secret",
     resave: false,
     saveUninitialized: true,
   })

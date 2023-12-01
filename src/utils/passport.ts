@@ -4,6 +4,7 @@ import { Strategy as GoogleStrtegy } from 'passport-google-oauth20';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import prisma from './prisma';
+import "dotenv/config";
 import { slugify } from '../services/slugify';
 import { UnauthorizedError } from '../middlewares';
 
@@ -45,7 +46,7 @@ passport.use(new JwtStrategy(options, async (jwt_payload, done) => {
 passport.use(new LocalStrategy( {
     usernameField: 'email',
     passwordField: 'password',
-    session: false
+    session: true
   },
   function(email, password, done) {
     prisma.user.findUnique({
