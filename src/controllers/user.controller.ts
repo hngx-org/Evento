@@ -155,16 +155,14 @@ const updateUserProfileById = async (
   }
 };
 
-// Add Social Links to User Profile
 const addSocialLinks = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const userID = req.params.id;
-  // destructuring the request body
 
-  // verify the user id
+  // Verify the user id
   const validUser = await prisma.user.findUnique({
     where: { userID },
     select: {
@@ -180,31 +178,56 @@ const addSocialLinks = async (
     const { websiteURL, twitterURL, facebookURL, instagramURL } =
       req.body as socialInterface;
 
-    // update the social links table
-    const sociallink = await prisma.socialLink.create({
-      data: {
-        userID,
-        websiteURL,
-        twitterURL,
-        facebookURL,
-        instagramURL,
+    // Check if the user already has social links
+    const existingSocialLink = await prisma.socialLink.findMany({
+      where: { userID },
+      select: {
+        linkID: true,
       },
     });
 
-    if (!sociallink) {
-      throw new NotFoundError("Social link not added");
+    console.log(existingSocialLink);
+
+    if (existingSocialLink && existingSocialLink.length > 0) {
+      // User has existing social links, update them
+      const socialLinkID = existingSocialLink[0].linkID;
+      const updatedSocialLink = await prisma.socialLink.update({
+        where: { linkID: socialLinkID },
+        data: {
+          websiteURL,
+          twitterURL,
+          facebookURL,
+          instagramURL,
+        },
+      });
+
+      ResponseHandler.success(
+        res,
+        updatedSocialLink,
+        200,
+        "Social links updated successfully"
+      );
+    } else {
+      // User doesn't have existing social links, create new ones
+      const newSocialLink = await prisma.socialLink.create({
+        data: {
+          userID: userID,
+          websiteURL,
+          twitterURL,
+          facebookURL,
+          instagramURL,
+        },
+      });
+
+      ResponseHandler.success(
+        res,
+        newSocialLink,
+        200,
+        "Social links added successfully"
+      );
     }
-
-    //
-
-    ResponseHandler.success(
-      res,
-      sociallink,
-      200,
-      "Social link Added successfully"
-    );
   } catch (error) {
-    //   check for prisma errors
+    // Check for Prisma errors
     next(error);
   }
 };
@@ -234,9 +257,17 @@ const getSocialLinksByUserId = async (
       throw new NotFoundError("Social links not found");
     }
 
+    //   return the social links as an array of objects
+    const socialLinksArray = {
+      websiteURL: socialLinks[0].websiteURL,
+      twitterURL: socialLinks[0].twitterURL,
+      facebookURL: socialLinks[0].facebookURL,
+      instagramURL: socialLinks[0].instagramURL,
+    };
+
     ResponseHandler.success(
       res,
-      socialLinks,
+      socialLinksArray,
       200,
       "Social links fetched successfully"
     );
