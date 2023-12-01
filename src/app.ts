@@ -44,7 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret",
+    secret: process.env.JWT_SECRET || "secret",
     resave: false,
     saveUninitialized: true,
   })
@@ -57,7 +57,7 @@ app.use(passport.session());
 
 //serve all routes dynamically using readdirsync
 readdirSync("./src/routes").map((path) => {
-  if (!path.includes("auth")) {
+  if (!path.includes("auth") && !path.includes("category")) {
     app.use("/api/v1/", authenticateJWT, require(`./routes/${path}`));
     // app.use("/api/v1/", require(`./routes/${path}`));
   } else {
