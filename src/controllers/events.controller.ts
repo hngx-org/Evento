@@ -5,7 +5,7 @@ import {
   editEventsInterface,
 } from "../interfaces/events.interface";
 // import { createEventsService } from "../services/events.service";
-import { BadRequestError, NotFoundError } from "../middlewares";
+import { BadRequestError, NotFoundError, ConflictError } from "../middlewares";
 import { ResponseHandler } from "../utils";
 import { cloudinary } from "../services/events.service";
 import { unlink } from "node:fs";
@@ -139,7 +139,18 @@ const getEventController: RequestHandler = async (req, res, next) => {
 const getAllEventsController: RequestHandler = async (req, res, next) => {
   try {
     // Get all events
-    const events = await event.findMany();
+    const events = await event.findMany({
+      include: {
+        participants: {
+          select: {
+            userID: true,
+            email: true,
+            profileImage: true,
+            displayName: true,
+          },
+        },
+      },
+    });
 
     // Return the events as the response
     ResponseHandler.success(res, events, 200, "Events found.");
@@ -237,6 +248,77 @@ const deleteEventController: RequestHandler = async (req, res, next) => {
   }
 };
 
+const registerForEventController: RequestHandler = async (req, res, next) => {
+  try {
+    // Destructure the event and user ID from the request body
+    const { eventID, userID } = req.body as { eventID: string; userID: string };
+
+    // Comfirm the the event exists
+    const existingEvent = await event.findFirst({
+      where: {
+        eventID,
+      },
+    });
+
+    // If the event does not exist, throw an error
+    if (!existingEvent) {
+      throw new NotFoundError("Event not found.");
+    }
+
+    // Check if the user is already registered for the event
+    const existingRegistration = await event.findFirst({
+      where: {
+        eventID,
+        participants: {
+          some: {
+            userID,
+          },
+        },
+      },
+    });
+
+    // If the user is already registered for the event, throw an error
+    if (existingRegistration) {
+      throw new ConflictError("You are already registered for this event.");
+    }
+
+    // Register the user for the event
+    const registeredUser = await event.update({
+      where: { eventID },
+      data: {
+        participants: {
+          connect: {
+            userID,
+          },
+        },
+      },
+      select: {
+        eventID: true,
+        title: true,
+        description: true,
+        participants: {
+          select: {
+            userID: true,
+            email: true,
+            profileImage: true,
+            displayName: true,
+          },
+        },
+      },
+    });
+
+    // Return the registered user as the response
+    ResponseHandler.success(
+      res,
+      registeredUser,
+      200,
+      "You have been registered for this event."
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   uploadEventImageController,
   createEventController,
@@ -244,4 +326,5 @@ export {
   getAllEventsController,
   editEventController,
   deleteEventController,
+  registerForEventController,
 };
