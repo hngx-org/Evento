@@ -282,7 +282,9 @@ const uploadProfileImage: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
+  try {
   console.log("start");
+  
   if (!req.file) {
     throw new BadRequestError("Please add a Profile Image");
   }
@@ -294,7 +296,7 @@ const uploadProfileImage: RequestHandler = async (
   const file = req.file as any;
   const { service } = req.body;
 
-  try {
+  
     // verify the user id
     const validUser = await prisma.user.findUnique({
       where: { userID: userID },
