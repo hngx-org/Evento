@@ -9,6 +9,7 @@ import {
   getSocialLinksByUserId,
   uploadProfileImage,
   updateUserPreferences,
+  deleteUser,
 } from "./../controllers/user.controller";
 
 const router: Router = express.Router();
@@ -339,5 +340,31 @@ router.post(
  *               type: string
  */
 router.post("/user/profile/preferences/:id", updateUserPreferences);
+
+/**
+ * @swagger
+ * /api/v1/user/delete/{id}:
+ *   delete:
+ *     summary: Delete User by ID
+ *     description: Delete user by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.delete("/user/delete/:id", deleteUser);
 
 module.exports = router;
