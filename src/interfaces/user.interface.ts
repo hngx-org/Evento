@@ -26,4 +26,17 @@ interface contactInterface {
   email: string;
 }
 
-export { userInterface, socialInterface, contactInterface };
+interface preferencesInterface {
+  userID: string;
+  theme?: string;
+  language?: string;
+  regionalSettings?: boolean;
+  timeZone?: string;
+}
+
+export {
+  userInterface,
+  socialInterface,
+  contactInterface,
+  preferencesInterface,
+};
