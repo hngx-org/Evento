@@ -23,10 +23,6 @@ model User {
     location             String?
     otp_enabled          Boolean                @default(false)
     otp_verified         Boolean                @default(false)
-    otp_ascii            String?
-    otp_hex              String?
-    otp_base32           String?
-    otp_auth_url         String?
     myEvents             Event[]
     PasswordReset        PasswordReset?
     Payment              Payment[]
@@ -39,6 +35,7 @@ model User {
     UserSupportTicket    UserSupportTicket[]
     Verification         Verification?
     signedUpEvents       Event[]                @relation("attendees")
+    OTP                  OTP[]
 }
 
 model Event {
@@ -115,6 +112,13 @@ model PasswordReset {
     expiryTimestamp DateTime
     status          String
     user            User     @relation(fields: [userID], references: [userID])
+}
+
+model OTP {
+    userID    String   @id
+    otp       String
+    createdAt DateTime @default(now())
+    user      User     @relation(fields: [userID], references: [userID])
 }
 
 model Preferences {
