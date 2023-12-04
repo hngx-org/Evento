@@ -775,10 +775,12 @@ const confirmPasswordChange = async (
       throw new InternalServerError("Password could not be updated");
     }
 
-    // Delete the verification token
-    await prisma.verification.delete({
-      where: { userID },
-    });
+    if (tokenExists) {
+      // Delete the verification token
+      await prisma.verification.delete({
+        where: { userID },
+      });
+    }
 
     if (req.session) {
       req.session.destroy((err) => {
