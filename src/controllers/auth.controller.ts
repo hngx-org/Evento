@@ -235,7 +235,7 @@ export const generateOTP = async (
 ) => {
   try {
     const userID = req.params.id;
-    const { compareEmail } = req.body;
+    const { email } = req.body;
 
     console.log(userID);
     const user = await prisma.user.findUnique({
@@ -253,6 +253,10 @@ export const generateOTP = async (
     if (!user) {
       throw new BadRequestError("User does not exist");
     }
+
+    const compareEmail = email;
+
+    console.log(user.email, compareEmail);
 
     if (user.email !== compareEmail) {
       throw new BadRequestError("Please use a registered email");
