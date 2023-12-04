@@ -22,18 +22,18 @@ export const register: RequestHandler = async (
 ) => {
   try {
     const { email, password, firstName, lastName } = req.body;
-    //  send email
-    const emailContent = {
-      to: email,
-      subject: "Welcome to Evento!",
-      userName: firstName,
-      additionalContent: `Thank you for registering with Evento!`,
-    };
-    await emailService(emailContent)(req, res, next);
+    // //  send email
+    // const emailContent = {
+    //   to: email,
+    //   subject: "Welcome to Evento!",
+    //   userName: firstName,
+    //   additionalContent: `Thank you for registering with Evento!`,
+    // };
+    // await emailService(emailContent)(req, res, next);
 
-    if (!emailService) {
-      return new BadRequestError("Error sending email");
-    }
+    // if (!emailService) {
+    //   return new BadRequestError("Error sending email");
+    // }
     const requiredFields = ["email", "password", "firstName", "lastName"];
 
     const fieldDisplayNames = {
@@ -193,7 +193,6 @@ export const oauthToken = async (
   next: NextFunction
 ) => {
   try {
-
     const user = req.user as CustomUser;
     if (req.user) {
       const token = generateToken(user);
