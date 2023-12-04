@@ -66,7 +66,7 @@ const sendEmail = async (emailContent) => {
     }
 
     await transporter.sendMail(emailContent);
-    console.log("Email sent successfully.", emailContent);
+    console.log("Email sent successfully.");
     return { message: "Email sent successfully." };
   } catch (error) {
     console.error("Error sending email:", error.message);
@@ -91,10 +91,11 @@ export const emailService = async (emailContent, templatePath) => {
       html: dynamicHTML,
     };
 
-    console.log(finalEmailContent);
+    // console.log(finalEmailContent);
 
     const emailStatus = await sendEmail(finalEmailContent);
     if (emailStatus) {
+      console.log("Email sent successfully.", emailStatus);
       return emailStatus;
     }
   } catch (error) {
