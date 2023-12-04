@@ -249,7 +249,7 @@ router.get("/protected", authenticateJWT, (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 
-router.get("/generate-otp/:id", generateOTP);
+router.post("/generate-otp/:id", generateOTP);
 /**
  * @swagger
  * /api/v1/verify-otp:
