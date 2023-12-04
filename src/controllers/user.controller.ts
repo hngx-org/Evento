@@ -20,8 +20,10 @@ import jwt from "jsonwebtoken";
 const jwtSecret = process.env.JWT_SECRET;
 
 // Generate a JWT token for confirmation link
-const generateConfirmationToken = (userID) => {
-  const token = jwt.sign({ userID }, jwtSecret, { expiresIn: "1h" });
+const generateConfirmationToken = (userID, hashedNewPassword) => {
+  const token = jwt.sign({ userID, hashedNewPassword }, jwtSecret, {
+    expiresIn: "1h",
+  });
   return token;
 };
 
@@ -30,6 +32,12 @@ const currentDir = path.resolve(__dirname, "..");
 
 // Then you can navigate to the desired template path
 const templatePath = path.join(currentDir, "views", "email", "verify.html");
+const verifyPasswordTemplate = path.join(
+  currentDir,
+  "views",
+  "email",
+  "verifypassword.html"
+);
 
 console.log(templatePath);
 
@@ -635,7 +643,8 @@ const updateUserPassword = async (
       select: {
         userID: true,
         displayName: true,
-        password: true, // Include password for comparison
+        password: true,
+        email: true,
       },
     });
 
@@ -658,8 +667,16 @@ const updateUserPassword = async (
       throw new BadRequestError("Old password is incorrect");
     }
 
+    // Hash the new password
+    const hashedPassword = await bcript.hash(newPassword, 10);
+
     // Generate a confirmation token
-    const confirmationToken = generateConfirmationToken(userID);
+    const confirmationToken = generateConfirmationToken(userID, hashedPassword);
+
+    //   if token exists, delete it
+    const tokenExists = await prisma.verification.delete({
+      where: { userID },
+    });
 
     // Save the confirmation token in the database
     await prisma.verification.create({
@@ -670,27 +687,108 @@ const updateUserPassword = async (
       },
     });
 
-    // Hash the new password
-    const hashedPassword = await bcript.hash(newPassword, 10);
+    const mailedToken = `http://localhost:3000/api/v1/user/password/confirm?token=${confirmationToken}`;
+
+    // Send the confirmation email
+    const emailVariables = {
+      userName: validUser.displayName,
+      verify: mailedToken,
+    };
+
+    const emailStatus = await emailService(
+      {
+        to: validUser.email,
+        subject: "Password Reset",
+        variables: emailVariables,
+      },
+      verifyPasswordTemplate
+    );
+
+    if (!emailStatus) {
+      throw new InternalServerError("Error changing password");
+    }
+
+    // Respond with success
+    return ResponseHandler.success(
+      res,
+      emailStatus,
+      200,
+      "Password updated successfully"
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Function to check if a token has expired
+const isTokenExpired = (creationTime: Date): boolean => {
+  const expirationTime = new Date(creationTime);
+  expirationTime.setMinutes(expirationTime.getMinutes() + 60); // 5 minutes expiration
+  return new Date() > expirationTime;
+};
+
+// confirm password change
+const confirmPasswordChange = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token } = req.query;
+
+  try {
+    // Verify the token
+    const decodedToken = jwt.verify(token, jwtSecret);
+
+    if (!decodedToken) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    const { userID, hashedNewPassword } = decodedToken;
+
+    //   check if the token hasnt expired
+    const tokenExists = await prisma.verification.findUnique({
+      where: { userID },
+      select: {
+        verificationCode: true,
+        timestamp: true,
+      },
+    });
+
+    if (!tokenExists) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    //   check if the token hasnt not exceeded 1 hour
+    if (isTokenExpired(tokenExists.timestamp)) {
+      throw new BadRequestError("Token has expired");
+    }
 
     // Update the user password
     const updatedUser = await prisma.user.update({
       where: { userID },
       data: {
-        password: hashedPassword,
-      },
-      select: {
-        userID: true,
+        password: hashedNewPassword,
       },
     });
 
-    // Respond with success
-    return ResponseHandler.success(
-      res,
-      updatedUser.userID,
-      200,
-      "Password updated successfully"
-    );
+    if (!updatedUser) {
+      throw new InternalServerError("Password could not be updated");
+    }
+
+    // Delete the verification token
+    await prisma.verification.delete({
+      where: { userID },
+    });
+
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          throw new BadRequestError("Cannot Redirect User");
+        }
+        console.log("session destroyed");
+        return res.redirect("https://evento1.vercel.app");
+      });
+    }
   } catch (error) {
     return next(error);
   }
@@ -707,4 +805,5 @@ export {
   updateUserPreferences,
   deleteUser,
   updateUserPassword,
+  confirmPasswordChange,
 };
