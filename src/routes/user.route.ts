@@ -10,6 +10,7 @@ import {
   uploadProfileImage,
   updateUserPreferences,
   deleteUser,
+  updateUserPassword,
 } from "./../controllers/user.controller";
 
 const router: Router = express.Router();
@@ -366,5 +367,38 @@ router.post("/user/profile/preferences/:id", updateUserPreferences);
  *               type: string
  */
 router.delete("/user/delete/:id", deleteUser);
+
+/**
+ * @swagger
+ * /api/v1/user/password/{id}:
+ *   patch:
+ *     summary: Update User Password by ID
+ *     description: Update user password by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to update password
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Updated user password data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.post("/user/password/:id", updateUserPassword);
 
 module.exports = router;

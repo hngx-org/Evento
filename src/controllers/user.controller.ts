@@ -11,9 +11,19 @@ import { v4 as uuidv4 } from "uuid";
 import prisma from "../utils/prisma";
 import { Prisma } from "@prisma/client";
 const path = require("path");
-
-import bycript from "bcryptjs";
+import "dotenv/config";
+import bcript from "bcryptjs";
 import { emailService } from "../services/mailer";
+import jwt from "jsonwebtoken";
+
+// Assuming you have a secret for JWT signing
+const jwtSecret = process.env.JWT_SECRET;
+
+// Generate a JWT token for confirmation link
+const generateConfirmationToken = (userID) => {
+  const token = jwt.sign({ userID }, jwtSecret, { expiresIn: "1h" });
+  return token;
+};
 
 // Assuming your current file is in a folder called "src"
 const currentDir = path.resolve(__dirname, "..");
@@ -562,12 +572,32 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
       select: {
         userID: true,
         displayName: true,
+        myEvents: true,
       },
     });
 
     if (!validUser) {
       throw new NotFoundError("User not found");
     }
+
+    //   delete user preferences
+    await prisma.preferences.delete({
+      where: { userID },
+    });
+
+    // Delete user events
+    // await Promise.all(
+    //   validUser.myEvents.map(async (eventID) => {
+    //     await prisma.event.delete({
+    //       where: { eventID },
+    //     });
+    //   })
+    // );
+
+    // delete users social links
+    await prisma.socialLink.deleteMany({
+      where: { userID: userID },
+    });
 
     // Delete the user
     const deletedUser = await prisma.user.delete({
@@ -596,7 +626,7 @@ const updateUserPassword = async (
   next: NextFunction
 ) => {
   const userID = req.params.id;
-  const { password } = req.body;
+  const { oldPassword, newPassword } = req.body;
 
   try {
     // Verify the user id
@@ -605,6 +635,7 @@ const updateUserPassword = async (
       select: {
         userID: true,
         displayName: true,
+        password: true, // Include password for comparison
       },
     });
 
@@ -612,13 +643,37 @@ const updateUserPassword = async (
       throw new NotFoundError("User not found");
     }
 
-    if (password.length < 6) {
+    if (!oldPassword || !newPassword) {
+      throw new BadRequestError("Old password and new password are required");
+    }
+
+    if (newPassword.length < 6) {
       throw new BadRequestError("Password must be at least 6 characters");
     }
 
-    const hashedPassword = await bycript.hash(password, 10);
+    // Compare old password with the stored hashed password
+    const passwordMatch = await bcript.compare(oldPassword, validUser.password);
 
-    //   update the user password
+    if (!passwordMatch) {
+      throw new BadRequestError("Old password is incorrect");
+    }
+
+    // Generate a confirmation token
+    const confirmationToken = generateConfirmationToken(userID);
+
+    // Save the confirmation token in the database
+    await prisma.verification.create({
+      data: {
+        userID: userID,
+        verificationCode: confirmationToken,
+        status: "pending",
+      },
+    });
+
+    // Hash the new password
+    const hashedPassword = await bcript.hash(newPassword, 10);
+
+    // Update the user password
     const updatedUser = await prisma.user.update({
       where: { userID },
       data: {
@@ -629,14 +684,15 @@ const updateUserPassword = async (
       },
     });
 
-    ResponseHandler.success(
+    // Respond with success
+    return ResponseHandler.success(
       res,
       updatedUser.userID,
       200,
-      "User deleted successfully"
+      "Password updated successfully"
     );
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -650,4 +706,5 @@ export {
   updateContactInformationByUserId,
   updateUserPreferences,
   deleteUser,
+  updateUserPassword,
 };

@@ -5,6 +5,7 @@ import "dotenv/config";
 import { errorHandler } from "./middlewares/index";
 import session from "express-session";
 import passport from "./utils/passport";
+import deleteExpiredTokens from "./utils/deletetoken";
 import cors from "cors";
 import morgan from "morgan";
 import { authenticateJWT } from "./middlewares/auth";
@@ -31,9 +32,11 @@ function keepAlive(url) {
     });
 }
 
-// cron job to ping the server every minute
+// cron job to ping the server every minute and delete expired tokens every 5 minutes
 cron.schedule("*/5 * * * *", () => {
   keepAlive("https://evento-qo6d.onrender.com/");
+  deleteExpiredTokens();
+  console.log("deleting expired tokens every 5 minutes");
   console.log("pinging the server every minute");
 });
 
