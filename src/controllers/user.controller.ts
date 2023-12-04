@@ -10,6 +10,18 @@ import { v4 as uuidv4 } from "uuid";
 
 import prisma from "../utils/prisma";
 import { Prisma } from "@prisma/client";
+const path = require("path");
+
+import bycript from "bcryptjs";
+import { emailService } from "../services/mailer";
+
+// Assuming your current file is in a folder called "src"
+const currentDir = path.resolve(__dirname, "..");
+
+// Then you can navigate to the desired template path
+const templatePath = path.join(currentDir, "views", "email", "verify.html");
+
+console.log(templatePath);
 
 import {
   userInterface,
@@ -284,20 +296,19 @@ const uploadProfileImage: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-  console.log("start");
-  
-  if (!req.file) {
-    throw new BadRequestError("Please add a Profile Image");
-  }
+    console.log("start");
 
-  console.log(req.file);
+    if (!req.file) {
+      throw new BadRequestError("Please add a Profile Image");
+    }
 
-  const userID = req.params.id;
-  console.log(userID);
-  const file = req.file as any;
-  const { service } = req.body;
+    console.log(req.file);
 
-  
+    const userID = req.params.id;
+    console.log(userID);
+    const file = req.file as any;
+    const { service } = req.body;
+
     // verify the user id
     const validUser = await prisma.user.findUnique({
       where: { userID: userID },
@@ -433,11 +444,43 @@ const updateUserPreferences = async (
     // Verify the user id
     const validUser = await prisma.user.findUnique({
       where: { userID },
-      select: { userID: true },
+      select: {
+        userID: true,
+        email: true,
+        firstName: true,
+      },
     });
 
     if (!validUser) {
       throw new NotFoundError("User not found");
+    }
+    const emailVariables = {
+      userName: validUser.firstName,
+      verify: "www.verify.com",
+    };
+
+    const emailStatus = await emailService(
+      {
+        to: validUser.email,
+        subject: "Preferences Updated Successfully",
+        variables: emailVariables,
+      },
+      templatePath
+    );
+
+    console.log(emailStatus);
+
+    //  send email
+    // const emailContent = {
+    //   to: validUser.email,
+    //   subject: "Welcome to Evento!",
+    //   userName: validUser.firstName,
+    //   additionalContent: `Preferences Updated Successfully`,
+    // };
+    // await emailService(emailContent)(req, res, next);
+
+    if (!emailService) {
+      return new BadRequestError("Error sending email");
     }
 
     const { theme, language, regionalSettings, timeZone } =
@@ -538,6 +581,57 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     ResponseHandler.success(
       res,
       validUser.displayName,
+      200,
+      "User deleted successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// update userpassword controller
+const updateUserPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userID = req.params.id;
+  const { password } = req.body;
+
+  try {
+    // Verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID },
+      select: {
+        userID: true,
+        displayName: true,
+      },
+    });
+
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (password.length < 6) {
+      throw new BadRequestError("Password must be at least 6 characters");
+    }
+
+    const hashedPassword = await bycript.hash(password, 10);
+
+    //   update the user password
+    const updatedUser = await prisma.user.update({
+      where: { userID },
+      data: {
+        password: hashedPassword,
+      },
+      select: {
+        userID: true,
+      },
+    });
+
+    ResponseHandler.success(
+      res,
+      updatedUser.userID,
       200,
       "User deleted successfully"
     );
