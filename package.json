@@ -58,6 +58,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pg-listen": "^1.7.0",
+	"pg": "^8.11.3",
     "ping": "^0.4.4",
     "socket.io": "^4.7.2",
     "swagger-jsdoc": "^6.2.8",
