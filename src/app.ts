@@ -20,16 +20,6 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
 
 const app = express();
-const httpServer = createServer(app);
-
-const io = new Server(httpServer, {
-   /* options */ 
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    credentials: false,
-  }
-});
 
 
 
@@ -72,7 +62,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(pgNotify(io))
+
 
 // app.use(authToken);
 
@@ -92,6 +82,18 @@ readdirSync("./src/routes").map((path) => {
 app.get("/", sayHelloController);
 app.use(errorHandler);
 const port = process.env.PORT || 3000;
+
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+   /* options */ 
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: false,
+  }
+});
+app.use(pgNotify(io))
 
 httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);

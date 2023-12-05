@@ -4,6 +4,10 @@ import { Server as SocketIoServer } from "socket.io";
 import { pgClient } from "../utils/dbClient";
 import createSubscriber from "pg-listen";
 import "dotenv/config";
+import prisma from '../utils/prisma';
+
+
+
 
 
 const pgNotify = (io) => {
@@ -11,20 +15,35 @@ const pgNotify = (io) => {
   pgClient.connect().then(() => {
     console.log("Connected to Postgres");
     const subscriber = createSubscriber({ connectionString: process.env.DATABASE_URL+`?ssl=true` })
-  
-    
     
     subscriber.notifications.on("new_event", (payload) => {
     console.log("Row added!", payload);
+    const message = "You have successeffuly created a new event";
 
-    io.emit("new_event", payload); // Emit the payload to connected clients
-  });
+    prisma.notification.create({
+      data: { 
+        userId: payload.userID,
+        message: message,
+        type: 'EVENT_REGISTRATION',
+        read: false,
+      },
+    }).then((notification) => {
+      console.log(notification);
 
-  subscriber.notifications.on("join_event", (payload) => {
-    console.log("Row added!", payload);
-    io.emit("new_event", payload); // Emit the payload to connected clients
-  });
+      io.emit("new_event", payload); // Emit the payload to connected clients
+
+   
+      // Emit the payload to connected clients
+    }).catch((err) => {
+      console.error(err);
+    })
+
+
   
+    
+  });
+
+ 
 
   subscriber.events.on("error", (error) => {
     console.error("Fatal database connection error:", error);
@@ -47,13 +66,7 @@ const pgNotify = (io) => {
 });
   
 
-  // Set up PostgreSQL listener
-  
 
-  // Attach WebSocket server to Express app
-    // io.attach(app);
-
-  // Middleware function
   return (req, res, next) => {
     req.io = io; // Make io accessible in routes
     next();
