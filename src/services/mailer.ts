@@ -1,4 +1,6 @@
 // emailMiddleware.js
+const fs = require("fs").promises;
+const path = require("path");
 const nodemailer = require("nodemailer");
 import { Request, Response, NextFunction } from "express";
 import { BadRequestError } from "../middlewares/errorhandler";
@@ -22,7 +24,7 @@ const pass = process.env.MAILGUN_PASSWORD;
 console.log(username, pass);
 const mailgunTransporter = nodemailer.createTransport({
   host: "smtp.mailgun.org",
-  port: 587,
+  port: 465,
   auth: {
     user: username,
     pass: pass,
@@ -42,6 +44,16 @@ const sendgridTransporter = process.env.SENDGRID_API_KEY
     })
   : null;
 
+const loadEmailTemplate = async (templatePath) => {
+  try {
+    const templateContent = await fs.readFile(templatePath, "utf-8");
+    return templateContent;
+  } catch (error) {
+    console.error("Error loading email template:", error.message);
+    throw new BadRequestError("Error loading email template");
+  }
+};
+
 // Define a function to send emails using SendGrid or Mailtrap based on configuration
 const sendEmail = async (emailContent) => {
   try {
@@ -54,6 +66,7 @@ const sendEmail = async (emailContent) => {
     }
 
     await transporter.sendMail(emailContent);
+    console.log("Email sent successfully.");
     return { message: "Email sent successfully." };
   } catch (error) {
     console.error("Error sending email:", error.message);
@@ -61,61 +74,42 @@ const sendEmail = async (emailContent) => {
   }
 };
 
-// Email middleware that can be extended for various functionalities
-export const emailService = (emailContent) => async (req, res, next) => {
+export const emailService = async (emailContent, templatePath) => {
   try {
-    // Customize the HTML content based on the provided variables
-    const { to, subject, userName, eventName, additionalContent } =
-      emailContent;
+    const { to, subject, variables } = emailContent;
 
-    const dynamicHTML = `
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: 'Arial', sans-serif;
-              background-color: #f4f4f4;
-              color: #333;
-            }
-            .container {
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-              background-color: #fff;
-              border-radius: 5px;
-              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
-            h1 {
-              color: #007BFF;
-            }
-            p {
-              line-height: 1.6;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Hi ${userName}!</h1>
-            <p>${additionalContent}</p>
-            <p>You are invited to the event "${eventName}". We hope to see you there!</p>
-          </div>
-        </body>
-      </html>
-    `;
+    // Load the email template from the provided file path
+    const templateHTML = await loadEmailTemplate(templatePath);
+
+    // Replace variables in the template
+    const dynamicHTML = replaceVariables(templateHTML, variables);
 
     const finalEmailContent = {
-      from: "your@gmail.com",
+      from: "hello@Evento.com",
       to,
       subject,
       html: dynamicHTML,
     };
 
+    // console.log(finalEmailContent);
+
     const emailStatus = await sendEmail(finalEmailContent);
     if (emailStatus) {
+      console.log("Email sent successfully.", emailStatus);
       return emailStatus;
     }
   } catch (error) {
     console.error("Error in email middleware:", error.message);
-    res.status(500).send("Error sending email");
+    throw new BadRequestError("Error sending email");
   }
+};
+
+const replaceVariables = (template, variables) => {
+  // Replace variables in the template
+  Object.keys(variables).forEach((variable) => {
+    const regex = new RegExp(`\\$\\{${variable}\\}`, "g");
+    template = template.replace(regex, variables[variable]);
+  });
+
+  return template;
 };

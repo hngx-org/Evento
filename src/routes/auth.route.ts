@@ -9,6 +9,9 @@ import {
   validateOTP,
   disableOTP,
 } from "../controllers/auth.controller";
+
+import { confirmPasswordChange } from "../controllers/user.controller";
+
 import { authenticateJWT } from "../middlewares/auth";
 import passport from "../utils/passport";
 
@@ -249,7 +252,7 @@ router.get("/protected", authenticateJWT, (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 
-router.get("/generate-otp/:id", generateOTP);
+router.post("/generate-otp/:id", generateOTP);
 /**
  * @swagger
  * /api/v1/verify-otp:
@@ -344,4 +347,6 @@ router.post("/validate-otp", validateOTP);
  */
 
 router.post("/disable-otp/:id", disableOTP);
+
+router.get("/user/password/confirm", confirmPasswordChange);
 module.exports = router;

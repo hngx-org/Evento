@@ -9,6 +9,7 @@ import {
   registerForEventController,
 } from "../controllers/events.controller";
 import { upload } from "../services/events.service";
+import { authenticateJWT } from "../middlewares";
 
 const eventsRouter = Router();
 
@@ -20,7 +21,7 @@ eventsRouter.post(
 );
 
 // Create a new event route
-eventsRouter.post("/events/create", createEventController);
+eventsRouter.post("/events/create", authenticateJWT, createEventController);
 
 // Get a single event route
 eventsRouter.get("/events/:eventID", getEventController);
@@ -29,13 +30,21 @@ eventsRouter.get("/events/:eventID", getEventController);
 eventsRouter.get("/events", getAllEventsController);
 
 // Edit an event route
-eventsRouter.put("/events/edit/:eventID", editEventController);
+eventsRouter.put("/events/edit/:eventID", authenticateJWT, editEventController);
 
 // Delete an event route
-eventsRouter.delete("/events/delete/:eventID", deleteEventController);
+eventsRouter.delete(
+  "/events/delete/:eventID",
+  authenticateJWT,
+  deleteEventController
+);
 
 // Register for an event route
-eventsRouter.post("/events/register", registerForEventController);
+eventsRouter.post(
+  "/events/register",
+  authenticateJWT,
+  registerForEventController
+);
 
 /**
  * @swagger

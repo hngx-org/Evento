@@ -5,6 +5,7 @@ import "dotenv/config";
 import { errorHandler } from "./middlewares/index";
 import session from "express-session";
 import passport from "./utils/passport";
+import deleteExpiredTokens from "./utils/deletetoken";
 import cors from "cors";
 import morgan from "morgan";
 import { authenticateJWT, pgNotify } from "./middlewares";
@@ -47,9 +48,11 @@ function keepAlive(url) {
     });
 }
 
-// cron job to ping the server every minute
+// cron job to ping the server every minute and delete expired tokens every 5 minutes
 cron.schedule("*/5 * * * *", () => {
   keepAlive("https://evento-qo6d.onrender.com/");
+  deleteExpiredTokens();
+  console.log("deleting expired tokens every 5 minutes");
   console.log("pinging the server every minute");
 });
 
@@ -75,7 +78,11 @@ app.use(pgNotify(io))
 
 //serve all routes dynamically using readdirsync
 readdirSync("./src/routes").map((path) => {
-  if (!path.includes("auth") && !path.includes("category")) {
+  if (
+    !path.includes("auth") &&
+    !path.includes("category") &&
+    !path.includes("events")
+  ) {
     app.use("/api/v1/", authenticateJWT, require(`./routes/${path}`));
     // app.use("/api/v1/", require(`./routes/${path}`));
   } else {
