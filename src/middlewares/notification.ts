@@ -6,18 +6,25 @@ import createSubscriber from "pg-listen";
 import "dotenv/config";
 
 
-const postgresNotificationMiddleware = (app) => {
-  const io = new SocketIoServer(app);
-
-  // Connect to PostgreSQL
+const pgNotify = (io) => {
+   // Connect to PostgreSQL
   pgClient.connect().then(() => {
     console.log("Connected to Postgres");
     const subscriber = createSubscriber({ connectionString: process.env.DATABASE_URL+`?ssl=true` })
   
-  subscriber.notifications.on("new_event", (payload) => {
+    
+    
+    subscriber.notifications.on("new_event", (payload) => {
+    console.log("Row added!", payload);
+
+    io.emit("new_event", payload); // Emit the payload to connected clients
+  });
+
+  subscriber.notifications.on("join_event", (payload) => {
     console.log("Row added!", payload);
     io.emit("new_event", payload); // Emit the payload to connected clients
   });
+  
 
   subscriber.events.on("error", (error) => {
     console.error("Fatal database connection error:", error);
@@ -53,4 +60,4 @@ const postgresNotificationMiddleware = (app) => {
   };
 };
 
-export {postgresNotificationMiddleware};
+export {pgNotify};

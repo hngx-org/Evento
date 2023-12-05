@@ -7,14 +7,30 @@ import session from "express-session";
 import passport from "./utils/passport";
 import cors from "cors";
 import morgan from "morgan";
-import { authenticateJWT } from "./middlewares/auth";
+import { authenticateJWT, pgNotify } from "./middlewares";
 import https from "https";
 import cron from "node-cron";
+import { Server } from "socket.io";
+import { createServer } from "http";
+
+
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
 
 const app = express();
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+   /* options */ 
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: false,
+  }
+});
+
+
 
 app.use(morgan("dev"));
 
@@ -53,6 +69,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(pgNotify(io))
+
 // app.use(authToken);
 
 //serve all routes dynamically using readdirsync
@@ -68,6 +86,6 @@ app.get("/", sayHelloController);
 app.use(errorHandler);
 const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

@@ -80,6 +80,9 @@ export const register: RequestHandler = async (
         slug: await slugify(`${firstName} ${lastName}`),
       },
     });
+
+    //send confirmation email
+
     const userWithoutPassword = {
       email: createdUser.email,
       firstName: createdUser.firstName,
