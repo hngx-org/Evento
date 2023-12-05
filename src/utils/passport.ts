@@ -4,6 +4,7 @@ import { Strategy as GoogleStrtegy } from 'passport-google-oauth20';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import prisma from './prisma';
+import "dotenv/config";
 import { slugify } from '../services/slugify';
 import { UnauthorizedError } from '../middlewares';
 
@@ -45,7 +46,7 @@ passport.use(new JwtStrategy(options, async (jwt_payload, done) => {
 passport.use(new LocalStrategy( {
     usernameField: 'email',
     passwordField: 'password',
-    session: false
+    session: true
   },
   function(email, password, done) {
     prisma.user.findUnique({
@@ -82,6 +83,9 @@ passport.use(new GoogleStrtegy({
         const user = await prisma.user.findUnique({
             where: {
                 email: profile.emails[0].value
+            },
+            select: {
+                userID: true
             }
         });
 
@@ -103,7 +107,7 @@ passport.use(new GoogleStrtegy({
                 }
             });
             const userWithoutPassword = {
-                id: newUser.userID
+                userID: newUser.userID
             }
             
 
@@ -119,10 +123,10 @@ passport.serializeUser(function(user: User, done) {
     done(null, user.userID);
 });
 
-passport.deserializeUser(function(id: string, done) {
+passport.deserializeUser(function(userID: string, done) {
     prisma.user.findUnique({
         where: {
-            userID: id,
+            userID: userID,
         },
         select: {
             userID: true,
@@ -137,8 +141,5 @@ passport.deserializeUser(function(id: string, done) {
         done(err, false);
     });
 })
-
-
-
 
 export default passport;

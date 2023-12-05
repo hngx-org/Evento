@@ -8,6 +8,10 @@ import {
   addSocialLinks,
   getSocialLinksByUserId,
   uploadProfileImage,
+  updateUserPreferences,
+  deleteUser,
+  updateUserPassword,
+  deleteUserProfileImage,
 } from "./../controllers/user.controller";
 
 const router: Router = express.Router();
@@ -305,5 +309,123 @@ router.post(
   uploadHandler,
   uploadProfileImage
 );
+
+/**
+ * @swagger
+ * /api/v1/user/profile/preferences/{id}:
+ *   patch:
+ *     summary: Update User Preferences by ID
+ *     description: Update user preferences by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to update preferences
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Updated user preferences data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.post("/user/profile/preferences/:id", updateUserPreferences);
+
+/**
+ * @swagger
+ * /api/v1/user/delete/{id}:
+ *   delete:
+ *     summary: Delete User by ID
+ *     description: Delete user by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.delete("/user/delete/:id", deleteUser);
+
+/**
+ * @swagger
+ * /api/v1/user/password/{id}:
+ *   patch:
+ *     summary: Update User Password by ID
+ *     description: Update user password by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to update password
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Updated user password data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.post("/user/password/change/:id", updateUserPassword);
+
+/**
+ * @swagger
+ * /api/v1/user/profile/image/delete/{id}:
+ *   delete:
+ *     summary: Delete User Profile Image by ID
+ *     description: Delete user profile image by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to delete profile image
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.delete("/user/profile/image/delete/:id", deleteUserProfileImage);
 
 module.exports = router;

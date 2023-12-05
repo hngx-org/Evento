@@ -6,8 +6,10 @@ import {
   getAllEventsController,
   editEventController,
   deleteEventController,
+  registerForEventController,
 } from "../controllers/events.controller";
 import { upload } from "../services/events.service";
+import { authenticateJWT } from "../middlewares";
 
 const eventsRouter = Router();
 
@@ -19,7 +21,7 @@ eventsRouter.post(
 );
 
 // Create a new event route
-eventsRouter.post("/events/create", createEventController);
+eventsRouter.post("/events/create", authenticateJWT, createEventController);
 
 // Get a single event route
 eventsRouter.get("/events/:eventID", getEventController);
@@ -28,10 +30,21 @@ eventsRouter.get("/events/:eventID", getEventController);
 eventsRouter.get("/events", getAllEventsController);
 
 // Edit an event route
-eventsRouter.put("/events/edit/:eventID", editEventController);
+eventsRouter.put("/events/edit/:eventID", authenticateJWT, editEventController);
 
 // Delete an event route
-eventsRouter.delete("/events/delete/:eventID", deleteEventController);
+eventsRouter.delete(
+  "/events/delete/:eventID",
+  authenticateJWT,
+  deleteEventController
+);
+
+// Register for an event route
+eventsRouter.post(
+  "/events/register",
+  authenticateJWT,
+  registerForEventController
+);
 
 /**
  * @swagger
@@ -205,6 +218,8 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *     summary: Delete an event by ID
  *     tags:
  *       - Events
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: eventID
@@ -252,6 +267,75 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundErrorResponse'
+ * /api/v1/events/register:
+ *   post:
+ *     summary: Register for an event
+ *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               eventID:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the event to register for
+ *               userID:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the user registering for the event
+ *     responses:
+ *       '200':
+ *         description: User registered for the event successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 eventID:
+ *                   type: string
+ *                   format: uuid
+ *                   description: The ID of the event
+ *                 title:
+ *                   type: string
+ *                   description: The title of the event
+ *                 description:
+ *                   type: string
+ *                   description: The description of the event
+ *                 participants:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       userID:
+ *                         type: string
+ *                         format: uuid
+ *                         description: The ID of the registered user
+ *                 message:
+ *                   type: string
+ *                   description: A message describing the response
+ *               example:
+ *                 eventID: "123e4567-e89b-12d3-a456-426614174001"
+ *                 title: "Sample Event"
+ *                 description: "This is a sample event."
+ *                 participants: [{ userID: "98765432-abcdef-1234-5678-fedcba987654" }]
+ *                 message: "You have been registered for this event."
+ *       '404':
+ *         description: Event not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundErrorResponse'
+ *       '409':
+ *         description: Conflict - User already registered for the event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ConflictErrorResponse'
  */
 
 /**
@@ -311,16 +395,16 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *         status: 200
  *         data:
  *           - eventID: 1
- *             title: "Event 1"
- *             description: "Event 1 description"
+ *             title: "Event"
+ *             description: "Event description"
  *             imageURL: "https://example.com/image.jpg"
  *             startDate: "2021-01-01"
  *             endDate: "2021-01-01"
  *             time: "12:00:00"
- *             location: "Event 1 location"
+ *             location: "Event location"
  *             capacity: 100
  *             entranceFee: 1000
- *             eventType: "Event 1 type"
+ *             eventType: "Event type"
  *             organizerID: 1
  *         message: "Sample success message"
  *     EventRequest:
@@ -363,21 +447,22 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *         organizerID:
  *           type: number
  *           description: The event organizer ID
- *         categoryID:
- *           type: number
- *           description: The event category ID
+ *         categoryName:
+ *           type: string
+ *           description: The event category name
  *       example:
- *         title: "Event 1"
- *         description: "Event 1 description"
+ *         title: "Event"
+ *         description: "Event description"
  *         imageURL: "https://example.com/image.jpg"
  *         startDate: "2023-11-19T12:30:00.000Z"
  *         endDate: "2023-11-22T01:00:00.000Z"
  *         time: "2023-11-19T12:00:00.000Z"
- *         location: "Event 1 location"
+ *         location: "Event location"
  *         capacity: 100
  *         entranceFee: 1000
- *         eventType: "Event 1 type"
+ *         eventType: "Event type"
  *         organizerID: "ab73f292-9267-4167-81f2-d85e9bd950d3"
+ *         categoryName: "Tech"
  *     NotFoundErrorResponse:
  *       type: object
  *       properties:
@@ -398,6 +483,27 @@ eventsRouter.delete("/events/delete/:eventID", deleteEventController);
  *         timestamp: "2021-01-01T00:00:00.000Z"
  *         success: false
  *         status: 404
+ *         message: "Sample error message"
+ *     ConflictErrorResponse:
+ *       type: object
+ *       properties:
+ *         timestamp:
+ *           type: string
+ *           format: date-time
+ *           description: The date and time of the response in ISO 8601 format
+ *         success:
+ *           type: boolean
+ *           description: Whether the request was successful or not
+ *         status:
+ *           type: number
+ *           description: The status code of the response
+ *         message:
+ *           type: string
+ *           description: A message describing the response
+ *       example:
+ *         timestamp: "2021-01-01T00:00:00.000Z"
+ *         success: false
+ *         status: 409
  *         message: "Sample error message"
  */
 

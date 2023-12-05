@@ -5,16 +5,23 @@ import "dotenv/config";
 import { errorHandler } from "./middlewares/index";
 import session from "express-session";
 import passport from "./utils/passport";
+import deleteExpiredTokens from "./utils/deletetoken";
 import cors from "cors";
 import morgan from "morgan";
-import { authenticateJWT } from "./middlewares/auth";
+import { authenticateJWT, pgNotify } from "./middlewares";
 import https from "https";
 import cron from "node-cron";
+import { Server } from "socket.io";
+import { createServer } from "http";
+
+
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
 
 const app = express();
+
+
 
 app.use(morgan("dev"));
 
@@ -31,9 +38,11 @@ function keepAlive(url) {
     });
 }
 
-// cron job to ping the server every minute
+// cron job to ping the server every minute and delete expired tokens every 5 minutes
 cron.schedule("*/5 * * * *", () => {
   keepAlive("https://evento-qo6d.onrender.com/");
+  deleteExpiredTokens();
+  console.log("deleting expired tokens every 5 minutes");
   console.log("pinging the server every minute");
 });
 
@@ -44,7 +53,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret",
+    secret: process.env.JWT_SECRET || "secret",
     resave: false,
     saveUninitialized: true,
   })
@@ -53,11 +62,16 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 // app.use(authToken);
 
 //serve all routes dynamically using readdirsync
 readdirSync("./src/routes").map((path) => {
-  if (!path.includes("auth")) {
+  if (
+    !path.includes("auth") &&
+    !path.includes("category") &&
+    !path.includes("events")
+  ) {
     app.use("/api/v1/", authenticateJWT, require(`./routes/${path}`));
     // app.use("/api/v1/", require(`./routes/${path}`));
   } else {
@@ -68,6 +82,18 @@ app.get("/", sayHelloController);
 app.use(errorHandler);
 const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+   /* options */ 
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: false,
+  }
+});
+app.use(pgNotify(io))
+
+httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
