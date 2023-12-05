@@ -290,10 +290,10 @@ const getSocialLinksByUserId = async (
 
     //   return the social links as an array of objects
     const socialLinksArray = {
-      websiteURL: socialLinks[0].websiteURL,
-      twitterURL: socialLinks[0].twitterURL,
-      facebookURL: socialLinks[0].facebookURL,
-      instagramURL: socialLinks[0].instagramURL,
+      websiteURL: socialLinks[0]?.websiteURL,
+      twitterURL: socialLinks[0]?.twitterURL,
+      facebookURL: socialLinks[0]?.facebookURL,
+      instagramURL: socialLinks[0]?.instagramURL,
     };
 
     ResponseHandler.success(
