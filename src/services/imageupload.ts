@@ -35,9 +35,24 @@ export const cloudinaryService = async (
     urls.push(image.secure_url);
 
     return { successful: true, message: "file uploaded successfully", urls };
-
-    return { successful: true, message: "files uploaded successfully", urls };
   } catch (error) {
     return { successful: false, message: (error as Error).message, urls: [] };
+  }
+};
+
+// delete image from cloudinary
+export const deleteImage = async (public_id: string) => {
+  try {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    const result = await cloudinary.v2.uploader.destroy(public_id);
+
+    return { successful: true, message: "file deleted successfully", result };
+  } catch (error) {
+    return { successful: false, message: (error as Error).message, result: {} };
   }
 };

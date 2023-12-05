@@ -11,6 +11,7 @@ import {
   updateUserPreferences,
   deleteUser,
   updateUserPassword,
+  deleteUserProfileImage,
 } from "./../controllers/user.controller";
 
 const router: Router = express.Router();
@@ -400,5 +401,31 @@ router.delete("/user/delete/:id", deleteUser);
  *               type: string
  */
 router.post("/user/password/change/:id", updateUserPassword);
+
+/**
+ * @swagger
+ * /api/v1/user/profile/image/delete/{id}:
+ *   delete:
+ *     summary: Delete User Profile Image by ID
+ *     description: Delete user profile image by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to delete profile image
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+router.delete("/user/profile/image/delete/:id", deleteUserProfileImage);
 
 module.exports = router;
