@@ -49,7 +49,7 @@ import {
 } from "../interfaces/user.interface";
 
 import { uploadProfileImageService } from "../services/profileimage";
-import { cloudinaryService } from "../services/imageupload";
+import { cloudinaryService, deleteImage } from "../services/imageupload";
 
 // validate id
 const validateId = (id: string): string | null => {
@@ -802,6 +802,58 @@ const confirmPasswordChange = async (
   }
 };
 
+// delete user profile image controller
+const deleteUserProfileImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userID = req.params.id;
+
+  try {
+    // Verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID },
+      select: {
+        userID: true,
+        profileImage: true,
+      },
+    });
+
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    // call the cloudinary service to delete the image
+    await deleteImage(validUser.profileImage);
+
+    if (!validUser.profileImage) {
+      throw new BadRequestError("User does not have a profile image");
+    }
+
+    // Delete the profile image
+    const deletedProfileImage = await prisma.user.update({
+      where: { userID },
+      data: {
+        profileImage: null,
+      },
+    });
+
+    if (!deletedProfileImage) {
+      throw new InternalServerError("Profile image could not be deleted");
+    }
+
+    ResponseHandler.success(
+      res,
+      deletedProfileImage.profileImage,
+      200,
+      "Profile image deleted successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 // upload profile picture controller
 export {
   getUserProfileById,
@@ -814,4 +866,5 @@ export {
   deleteUser,
   updateUserPassword,
   confirmPasswordChange,
+  deleteUserProfileImage,
 };
