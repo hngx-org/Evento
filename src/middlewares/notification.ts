@@ -5,6 +5,8 @@ import { pgClient } from "../utils/dbClient";
 import createSubscriber from "pg-listen";
 import "dotenv/config";
 import prisma from '../utils/prisma';
+import { createNotification, updateReadStatus } from '../controllers/notifications.controller';
+import { NotificationType } from '@prisma/client';
 
 
 
@@ -19,18 +21,16 @@ const pgNotify = (io) => {
     subscriber.notifications.on("new_event", (payload) => {
     console.log("Row added!", payload);
     const message = "You have successeffuly created a new event";
+    const type: NotificationType = "EVENT_REGISTRATION";
+    const userId = payload.organizerID;
 
-    prisma.notification.create({
-      data: { 
-        userId: payload.userID,
-        message: message,
-        type: 'EVENT_REGISTRATION',
-        read: false,
-      },
-    }).then((notification) => {
+    createNotification(userId, type, message).then((notification) => {
       console.log(notification);
 
-      io.emit("new_event", payload); // Emit the payload to connected clients
+      io.emit("new_event", payload, {
+        type: "EVENT_REGISTRATION",
+        message: "You have successeffuly created a new event",
+      }); // Emit the payload to connected clients
 
    
       // Emit the payload to connected clients
