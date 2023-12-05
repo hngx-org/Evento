@@ -674,9 +674,15 @@ const updateUserPassword = async (
     const confirmationToken = generateConfirmationToken(userID, hashedPassword);
 
     //   if token exists, delete it
-    const tokenExists = await prisma.verification.delete({
+    const tokenExists = await prisma.verification.findUnique({
       where: { userID },
     });
+
+    if (tokenExists) {
+      const tokenExists = await prisma.verification.delete({
+        where: { userID },
+      });
+    }
 
     // Save the confirmation token in the database
     await prisma.verification.create({
