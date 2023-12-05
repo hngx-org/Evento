@@ -76,6 +76,11 @@ export const register: RequestHandler = async (
         slug: await slugify(`${firstName} ${lastName}`),
       },
     });
+
+    //send confirmation email
+
+    sendSignUpVerificationEmail(createdUser);
+
     const userWithoutPassword = {
       email: createdUser.email,
       firstName: createdUser.firstName,
@@ -174,12 +179,28 @@ async function loginUser(req: Request, user: any) {
   });
 }
 
+function sendSignUpVerificationEmail(user: any) {
+  const emailVariables = {
+    userName: user.firstName,
+    verificationLink: `${process.env.CLIENT_URL}/verify/${user.userID}`,
+  };
+
+  return emailService(
+    {
+      to: user.email,
+      subject: "Verify your email",
+      variables: emailVariables,
+    },
+    templatePath
+  );
+}
+
 function generateToken(user: any): string {
   const userWithoutPassword = {
     id: user.userID,
   };
   return jwt.sign(userWithoutPassword, process.env.JWT_SECRET as string, {
-    expiresIn: "1h",
+    expiresIn: "168h",
   });
 }
 
