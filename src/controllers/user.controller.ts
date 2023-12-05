@@ -693,7 +693,7 @@ const updateUserPassword = async (
       },
     });
 
-    const mailedToken = `http://localhost:3000/api/v1/user/password/confirm?token=${confirmationToken}`;
+    const mailedToken = `https://evento-qo6d.onrender.com/api/v1/user/password/confirm?token=${confirmationToken}`;
 
     // Send the confirmation email
     const emailVariables = {
