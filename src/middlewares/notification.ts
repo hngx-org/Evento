@@ -37,9 +37,6 @@ const pgNotify = (io) => {
     }).catch((err) => {
       console.error(err);
     })
-
-
-  
     
   });
 
