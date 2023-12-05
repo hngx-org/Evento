@@ -11,7 +11,6 @@ import {
   updateUserPreferences,
   deleteUser,
   updateUserPassword,
-  confirmPasswordChange,
 } from "./../controllers/user.controller";
 
 const router: Router = express.Router();
@@ -401,7 +400,5 @@ router.delete("/user/delete/:id", deleteUser);
  *               type: string
  */
 router.post("/user/password/change/:id", updateUserPassword);
-
-router.get("/user/password/confirm", confirmPasswordChange);
 
 module.exports = router;

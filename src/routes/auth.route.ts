@@ -9,6 +9,9 @@ import {
   validateOTP,
   disableOTP,
 } from "../controllers/auth.controller";
+
+import { confirmPasswordChange } from "../controllers/user.controller";
+
 import { authenticateJWT } from "../middlewares/auth";
 import passport from "../utils/passport";
 
@@ -344,4 +347,6 @@ router.post("/validate-otp", validateOTP);
  */
 
 router.post("/disable-otp/:id", disableOTP);
+
+router.get("/user/password/confirm", confirmPasswordChange);
 module.exports = router;
