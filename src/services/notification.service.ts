@@ -9,6 +9,10 @@ subscriber.notifications.on("new_event", (payload) => {
   console.log("Row added!", payload);
 });
 
+subscriber.notifications.on("join_event", (payload) => {
+    console.log("Row added!", payload);
+  });
+
 subscriber.events.on("error", (error) => {
   console.error("Fatal database connection error:", error);
   process.exit(1);

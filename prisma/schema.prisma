@@ -8,41 +8,42 @@ datasource db {
 }
 
 model User {
-    userID               String                 @id @unique @default(uuid())
-    email                String                 @unique
-    password             String
-    bio                  String?
-    socialLinks          String?
-    profileImage         String?
-    googleAccountID      String?
-    displayName          String?
-    firstName            String
-    lastName             String
-    slug                 String                 @unique
-    role                 Role                   @default(USER)
-    location             String?
-    otp_enabled          Boolean                @default(false)
-    otp_verified         Boolean                @default(false)
-    myEvents             Event[]
-    PasswordReset        PasswordReset?
-    Payment              Payment[]
-    Preferences          Preferences?
-    PrivacySetting       PrivacySetting[]
-    Security             Security?
-    SocialLink           SocialLink[]
-    Ticket               Ticket[]
-    UserEventInteraction UserEventInteraction[]
-    UserSupportTicket    UserSupportTicket[]
-    Verification         Verification?
-    signedUpEvents       Event[]                @relation("attendees")
-    OTP                  OTP[]
+    userID                  String                    @id @unique @default(uuid())
+    email                   String                    @unique
+    password                String
+    bio                     String?
+    socialLinks             String?
+    profileImage            String?
+    googleAccountID         String?
+    displayName             String?
+    firstName               String
+    lastName                String
+    slug                    String                    @unique
+    role                    Role                      @default(USER)
+    location                String?
+    otp_enabled             Boolean                   @default(false)
+    otp_verified            Boolean                   @default(false)
+    myEvents                Event[]
+    OTP                     OTP?
+    PasswordReset           PasswordReset?
+    Payment                 Payment[]
+    Preferences             Preferences?
+    PrivacySetting          PrivacySetting[]
+    Security                Security?
+    SocialLink              SocialLink[]
+    Ticket                  Ticket[]
+    UserEventInteraction    UserEventInteraction[]
+    UserSupportTicket       UserSupportTicket[]
+    Verification            Verification?
+    signedUpEvents          Event[]                   @relation("attendees")
+    NotificationPreferences NotificationPreferences[]
+    Notification            Notification[]
 }
 
 model Event {
     eventID              String                 @id @unique @default(uuid())
     title                String
     description          String?
-    imageURL             String?
     startDate            DateTime
     endDate              DateTime
     time                 DateTime
@@ -52,6 +53,7 @@ model Event {
     eventType            String
     organizerID          String
     categoryCategoryID   String?
+    imageURL             String?
     Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
     organizer            User                   @relation(fields: [organizerID], references: [userID])
     eventAnalytics       EventAnalytics?
@@ -123,10 +125,10 @@ model OTP {
 
 model Preferences {
     userID           String  @id
-    theme            String?
     language         String?
-    regionalSettings Boolean @default(false)
+    theme            String?
     timeZone         String?
+    regionalSettings Boolean @default(false)
     user             User    @relation(fields: [userID], references: [userID])
 }
 
@@ -187,6 +189,35 @@ model UserSupportTicket {
     issueDescription String
     status           String
     user             User   @relation(fields: [userID], references: [userID])
+}
+
+model Notification {
+    id        String           @id @default(uuid())
+    userId    String
+    type      NotificationType
+    message   String
+    read      Boolean          @default(false)
+    createdAt DateTime         @default(now())
+    user      User             @relation(fields: [userId], references: [userID])
+}
+
+model NotificationPreferences {
+    id        String           @id @default(uuid())
+    userId    String
+    type      NotificationType
+    inApp     Boolean          @default(true)
+    email     Boolean          @default(false)
+    push      Boolean          @default(false)
+    user      User             @relation(fields: [userId], references: [userID])
+    createdAt DateTime         @default(now())
+}
+
+enum NotificationType {
+    NEWSLETTER
+    EVENT_REGISTRATION
+    EVENT_INVITE
+    EVENT_CHANGE
+    JOIN_EVENT
 }
 
 enum Role {
