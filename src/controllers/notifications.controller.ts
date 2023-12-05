@@ -21,7 +21,7 @@ interface NotificationPreference {
         email: boolean;
         push: boolean;
     };
-    event_update: {
+    join_event: {
         inApp: boolean;
         email: boolean;
         push: boolean;
@@ -43,7 +43,7 @@ interface Preference {
 export const updateNotificationPreferences = async (req: Request, res: Response, next: NextFunction) => {
     try {
     
-      const { newsletter, event_registration, event_invite, event_update, event_change } = req.body as NotificationPreference;
+      const { newsletter, event_registration, event_invite, join_event, event_change } = req.body as NotificationPreference;
       const userId = req.params.userId;
   
       // Check if the user exists
@@ -62,8 +62,8 @@ export const updateNotificationPreferences = async (req: Request, res: Response,
         { type: "NEWSLETTER" as NotificationType, preferences: newsletter },
         { type: "EVENT_REGISTRATION" as NotificationType, preferences: event_registration },
         { type: "EVENT_INVITE" as NotificationType, preferences: event_invite },
-        { type: "EVENT_UPDATE" as NotificationType, preferences: event_update },
         { type: "EVENT_CHANGE" as NotificationType, preferences: event_change },
+        { type: "JOIN_EVENT" as NotificationType, preferences: join_event },
       ].filter(({ preferences }) => preferences && typeof preferences === 'object');
   
       // Collect promises for each type
@@ -119,11 +119,11 @@ try {
     }
 } catch (error) {
     if (error.code === 'P2025' && error.message.includes('RecordDoesNotExist')) {
-    // Handle the specific case where the record does not exist
+   
     console.error(`Record with userId: ${userId} and type: ${type} does not exist.`);
     } else {
-    // Handle other errors or rethrow them if needed
-    console.error(`Failed to update preferences for user ${userId}, type ${type}: ${error.message}`);
+  
+
     throw error;
     }
 }

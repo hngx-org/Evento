@@ -63,7 +63,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-
 // app.use(authToken);
 
 //serve all routes dynamically using readdirsync

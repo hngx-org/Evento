@@ -215,7 +215,7 @@ model NotificationPreferences {
 enum NotificationType {
     NEWSLETTER
     EVENT_REGISTRATION
-    EVENT_INVIATION
+    EVENT_INVITE
     EVENT_CHANGE
     JOIN_EVENT
 }
