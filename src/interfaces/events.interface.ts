@@ -6,7 +6,7 @@ interface createEventsInterface {
   startDate: Date;
   endDate: Date;
   locationType: string;
-  location: string;
+  location?: string;
   virtualLocationLink?: string;
   capacity: number;
   eventType: string;
