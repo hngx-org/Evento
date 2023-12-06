@@ -4,6 +4,7 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 import { Request, Response, NextFunction } from "express";
 import { BadRequestError } from "../middlewares/errorhandler";
+const mjml2html = require("mjml");
 import "dotenv/config";
 
 const mailgun = require("nodemailer-mailgun-transport");
@@ -82,7 +83,17 @@ export const emailService = async (emailContent, templatePath) => {
     const templateHTML = await loadEmailTemplate(templatePath);
 
     // Replace variables in the template
-    const dynamicHTML = replaceVariables(templateHTML, variables);
+    const replacedHTML = replaceVariables(templateHTML, variables);
+
+    console.log(replacedHTML);
+
+    console.log(variables);
+
+    // Convert MJML to HTML
+    const mjmlOutput = mjml2html(replacedHTML);
+    const dynamicHTML = mjmlOutput.html;
+
+    console.log("dynamic", dynamicHTML);
 
     const finalEmailContent = {
       from: "hello@Evento.com",
@@ -104,10 +115,20 @@ export const emailService = async (emailContent, templatePath) => {
   }
 };
 
+// const replaceVariables = (template, variables) => {
+//   // Replace variables in the template
+//   Object.keys(variables).forEach((variable) => {
+//     const regex = new RegExp(`\\$\\{${variable}\\}`, "g");
+//     template = template.replace(regex, variables[variable]);
+//   });
+
+//   return template;
+// };
+
 const replaceVariables = (template, variables) => {
   // Replace variables in the template
   Object.keys(variables).forEach((variable) => {
-    const regex = new RegExp(`\\$\\{${variable}\\}`, "g");
+    const regex = new RegExp(`\\[\\[${variable}\\]\\]`, "g");
     template = template.replace(regex, variables[variable]);
   });
 
