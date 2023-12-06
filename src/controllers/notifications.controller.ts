@@ -2,43 +2,46 @@ import { Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 import {NotificationType } from '@prisma/client';
 import { ResponseHandler } from '../utils';
+import {NotificationPreference, Preference} from '../interfaces/notification.interface'
 
 
+export const getNotificationPreferences = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.params.userId;
 
-interface NotificationPreference {
-    newsletter: {
-        inApp: boolean;
-        email: boolean;
-        push: boolean;
-    };
-    event_registration: {
-        inApp: boolean;
-        email: boolean;
-        push: boolean;
-    };
-    event_invite: {
-        inApp: boolean;
-        email: boolean;
-        push: boolean;
-    };
-    join_event: {
-        inApp: boolean;
-        email: boolean;
-        push: boolean;
-    };
-    event_change: {
-        inApp: boolean;
-        email: boolean;
-        push: boolean;
-    };
-}
+        // Check if the user exists
+        const user = await prisma.user.findUnique({
+        where: {
+            userID: userId,
+        },
+        });
 
-interface Preference {
-    inApp: boolean;
-    email: boolean;
-    push: boolean;
-}
+        if (!user) {
+        throw new Error("User not found");
+        }
 
+        // Get all notification preferences for the user
+        const preferences = await prisma.notificationPreferences.findMany({
+        where: {
+            userId: userId,
+        },
+        });
+
+        // Convert the preferences into an object
+        const preferencesObject = preferences.reduce((acc, preference) => {
+        acc[preference.type.toLocaleLowerCase()] = {
+            inApp: preference.inApp,
+            email: preference.email,
+            push: preference.push,
+        };
+        return acc;
+        }, {});
+
+        ResponseHandler.success(res, preferencesObject, 200, "Preferences retrieved successfully");
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const updateNotificationPreferences = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -74,9 +77,27 @@ export const updateNotificationPreferences = async (req: Request, res: Response,
       }
 
       // Run all promises concurrently
-      const data = await Promise.all(preferencesPromises);
+      await Promise.all(preferencesPromises);
+
+        // Get all notification preferences for the user
+        const data = await prisma.notificationPreferences.findMany({
+        where: {
+            userId: userId,
+        },
+        });
+
+        const outputData = {};
+
+        data.forEach(item => {
+            const eventType = item.type.toLowerCase();
+            outputData[eventType] = {
+                inApp: item.inApp,
+                email: item.email,
+                push: item.push
+            };
+        });
   
-      ResponseHandler.success(res, data , 200, "Preferences updated successfully")
+      ResponseHandler.success(res, outputData, 200, "Preferences updated successfully")
     } catch (error) {
       next(error);
     }
