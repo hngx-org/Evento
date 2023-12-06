@@ -64,13 +64,15 @@ const createEventController: RequestHandler = async (req, res, next) => {
       imageURL,
       startDate,
       endDate,
-      time,
+      locationType,
       location,
+      virtualLocationLink,
       capacity,
-      entranceFee,
       eventType,
       organizerID,
       categoryName,
+      ticketType,
+      ticketPrice,
     } = req.body as createEventsInterface;
 
     // Check if there is an existing event with the same title as in the request title payload
@@ -93,10 +95,10 @@ const createEventController: RequestHandler = async (req, res, next) => {
         imageURL,
         startDate,
         endDate,
-        time,
+        locationType,
         location,
+        virtualLocationLink,
         capacity,
-        entranceFee,
         eventType,
         organizer: {
           connect: {
@@ -113,6 +115,13 @@ const createEventController: RequestHandler = async (req, res, next) => {
             },
           },
         },
+        tickets: {
+          create: {
+            userID: organizerID,
+            ticketType,
+            ticketPrice,
+          },
+        },
       },
       include: {
         organizer: {
@@ -125,6 +134,13 @@ const createEventController: RequestHandler = async (req, res, next) => {
           },
         },
         Category: true,
+        tickets: {
+          select: {
+            ticketID: true,
+            ticketType: true,
+            ticketPrice: true,
+          },
+        },
       },
     });
 
@@ -218,13 +234,15 @@ const editEventController: RequestHandler = async (req, res, next) => {
       description,
       startDate,
       endDate,
-      time,
+      locationType,
       location,
+      virtualLocationLink,
       capacity,
-      entranceFee,
       eventType,
       organizerID,
       categoryName,
+      ticketType,
+      ticketPrice,
     } = req.body as editEventsInterface;
 
     // Update the event
@@ -235,16 +253,11 @@ const editEventController: RequestHandler = async (req, res, next) => {
         description,
         startDate,
         endDate,
-        time,
+        locationType,
         location,
+        virtualLocationLink,
         capacity,
-        entranceFee,
         eventType,
-        organizer: {
-          connect: {
-            userID: organizerID,
-          },
-        },
         Category: {
           connectOrCreate: {
             where: {
