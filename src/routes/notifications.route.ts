@@ -265,7 +265,7 @@ const router  = Router();
 
 
 
-router.post('/settings/:userId/notifications', updateNotificationPreferences);
+router.put('/settings/:userId/notifications', updateNotificationPreferences);
 
 router.get('/settings/:userId/notifications', getNotificationPreferences);
 
