@@ -65,12 +65,15 @@ const createEventController: RequestHandler = async (req, res, next) => {
       startDate,
       endDate,
       time,
+      locationType,
       location,
+      virtualLocationLink,
       capacity,
-      entranceFee,
       eventType,
       organizerID,
       categoryName,
+      ticketType,
+      ticketPrice,
     } = req.body as createEventsInterface;
 
     // Check if there is an existing event with the same title as in the request title payload
@@ -96,7 +99,6 @@ const createEventController: RequestHandler = async (req, res, next) => {
         time,
         location,
         capacity,
-        entranceFee,
         eventType,
         organizer: {
           connect: {
@@ -221,7 +223,6 @@ const editEventController: RequestHandler = async (req, res, next) => {
       time,
       location,
       capacity,
-      entranceFee,
       eventType,
       organizerID,
       categoryName,
@@ -238,7 +239,6 @@ const editEventController: RequestHandler = async (req, res, next) => {
         time,
         location,
         capacity,
-        entranceFee,
         eventType,
         organizer: {
           connect: {

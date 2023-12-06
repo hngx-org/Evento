@@ -115,8 +115,6 @@ eventsRouter.post(
  *   get:
  *     summary: Get all events
  *     tags: [Events]
- *     security:
- *       - BearerAuth: []
  *     responses:
  *       '200':
  *         description: The list of all events
@@ -129,8 +127,6 @@ eventsRouter.post(
  *   get:
  *     summary: Get an event by ID
  *     tags: [Events]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: eventID

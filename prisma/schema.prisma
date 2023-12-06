@@ -41,28 +41,29 @@ model User {
 }
 
 model Event {
-    eventID              String                 @id @unique @default(uuid())
-    title                String
-    description          String?
-    startDate            DateTime
-    endDate              DateTime
-    time                 DateTime
-    location             String
-    capacity             Int
-    entranceFee          Float?
-    eventType            String
-    organizerID          String
-    categoryCategoryID   String?
-    imageURL             String?
-    Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
-    organizer            User                   @relation(fields: [organizerID], references: [userID])
-    eventAnalytics       EventAnalytics?
-    locations            Location[]
-    Payment              Payment[]
-    PrivacySetting       PrivacySetting[]
-    tickets              Ticket[]
-    UserEventInteraction UserEventInteraction[]
-    participants         User[]                 @relation("attendees")
+  eventID              String                 @id @unique @default(uuid())
+  title                String
+  description          String?
+  imageURL             String?
+  startDate            DateTime
+  endDate              DateTime
+  time                 DateTime
+  locationType         String
+  location             String
+  virtualLocationLink  String?
+  capacity             Int
+  eventType            String
+  organizerID          String
+  categoryCategoryID   String?
+  Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
+  organizer            User                   @relation(fields: [organizerID], references: [userID])
+  eventAnalytics       EventAnalytics?
+  locations            Location[]
+  Payment              Payment[]
+  PrivacySetting       PrivacySetting[]
+  tickets              Ticket[]
+  UserEventInteraction UserEventInteraction[]
+  participants         User[]                 @relation("attendees")
 }
 
 model Verification {
@@ -84,16 +85,16 @@ model SocialLink {
 }
 
 model Ticket {
-    ticketID   String  @id @unique @default(uuid())
-    eventID    String
-    userID     String
-    ticketType String
-    price      Float
-    quantity   Int
-    isPaid     Boolean
-    isValid    Boolean
-    event      Event   @relation(fields: [eventID], references: [eventID])
-    user       User    @relation(fields: [userID], references: [userID])
+  ticketID    String   @id @unique @default(uuid())
+  eventID     String
+  userID      String
+  ticketType  String
+  ticketPrice Float?
+  quantity    Int?
+  isPaid      Boolean?
+  isValid     Boolean?
+  event       Event    @relation(fields: [eventID], references: [eventID])
+  user        User     @relation(fields: [userID], references: [userID])
 }
 
 model Location {
@@ -150,9 +151,9 @@ model Payment {
 }
 
 model Category {
-    categoryID String  @id @unique @default(uuid())
-    name       String  @unique
-    events     Event[]
+  categoryID String  @id @unique @default(uuid())
+  name       String  @unique
+  events     Event[]
 }
 
 model UserEventInteraction {
