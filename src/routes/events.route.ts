@@ -115,8 +115,6 @@ eventsRouter.post(
  *   get:
  *     summary: Get all events
  *     tags: [Events]
- *     security:
- *       - BearerAuth: []
  *     responses:
  *       '200':
  *         description: The list of all events
@@ -129,8 +127,6 @@ eventsRouter.post(
  *   get:
  *     summary: Get an event by ID
  *     tags: [Events]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: eventID
@@ -373,10 +369,13 @@ eventsRouter.post(
  *                 type: string
  *               endDate:
  *                 type: string
- *               time:
+ *               locationType:
  *                 type: string
  *               location:
  *                 type: string
+ *               virtualLocationLink:
+ *                 type: string
+ *                 format: uri
  *               capacity:
  *                 type: number
  *               entranceFee:
@@ -400,8 +399,9 @@ eventsRouter.post(
  *             imageURL: "https://example.com/image.jpg"
  *             startDate: "2021-01-01"
  *             endDate: "2021-01-01"
- *             time: "12:00:00"
+ *             locationType: "Physical"
  *             location: "Event location"
+ *             virtualLocationLink: "https://example.com"
  *             capacity: 100
  *             entranceFee: 1000
  *             eventType: "Event type"
@@ -428,19 +428,19 @@ eventsRouter.post(
  *           type: string
  *           format: date-time
  *           description: The event end date
- *         time:
+ *         locationType:
  *           type: string
- *           format: time
- *           description: The event time
+ *           description: The event location type
  *         location:
  *           type: string
  *           description: The event location
+ *         virtualLocationLink:
+ *           type: string
+ *           format: uri
+ *           description: The event virtual location link
  *         capacity:
  *           type: number
  *           description: The event capacity
- *         entranceFee:
- *           type: number
- *           description: The event entrance fee
  *         eventType:
  *           type: string
  *           description: The event type
@@ -450,19 +450,27 @@ eventsRouter.post(
  *         categoryName:
  *           type: string
  *           description: The event category name
+ *         ticketType:
+ *           type: string
+ *           description: The event ticket type
+ *         ticketPrice:
+ *           type: number
+ *           description: The event ticket price
  *       example:
  *         title: "Event"
  *         description: "Event description"
  *         imageURL: "https://example.com/image.jpg"
  *         startDate: "2023-11-19T12:30:00.000Z"
  *         endDate: "2023-11-22T01:00:00.000Z"
- *         time: "2023-11-19T12:00:00.000Z"
+ *         locationType: "Physical"
  *         location: "Event location"
+ *         virtualLocationLink: "https://example.com"
  *         capacity: 100
- *         entranceFee: 1000
  *         eventType: "Event type"
  *         organizerID: "ab73f292-9267-4167-81f2-d85e9bd950d3"
  *         categoryName: "Tech"
+ *         ticketType: "Free"
+ *         ticketPrice: 0
  *     NotFoundErrorResponse:
  *       type: object
  *       properties:
