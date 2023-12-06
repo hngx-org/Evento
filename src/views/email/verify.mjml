@@ -1,0 +1,41 @@
+<mjml>
+	<mj-head>
+		<mj-title>Verify Email</mj-title>
+		<mj-include path="path/to/styles.css" />
+	</mj-head>
+	<mj-body background-color="#f8f8f8">
+		<mj-container max-width="670px" width="auto" text-align="center" padding="106px 45px 110.5px 31px"
+			border="1px solid #b7b7b7" background-color="#fff">
+			<mj-image src="logo.svg" alt="Logo" width="100%" />
+			<mj-text font-size="32px" font-weight="600" color="#0f0f0f" line-height="40px" padding="8px 0">
+				You are almost there!
+			</mj-text>
+			<mj-text font-size="14px" font-weight="400" color="#0f0f0f" line-height="24px" padding-bottom="10px">
+				Hello [[Name]],
+				<br />
+				Welcome to Evento
+				<br />
+				To get started, we need to verify your email address.
+				<br />
+				Please click the link below: <a href="[[Verification Link]]" class="verification-link"
+					color="#360789">Verification Link</a>
+				<br />
+				Unleash the Extraordinary,
+				<br />
+				Where moments become memories
+			</mj-text>
+			<mj-text font-size="10px" font-weight="400" color="#0f0f0f" line-height="14px" padding-top="4px">
+				Get the Eclipse app to plan your events and stay up-to-date with details on the go.
+			</mj-text>
+			<mj-text font-size="10px" font-weight="400" color="#0f0f0f" line-height="14px" padding-top="2px">
+				Copyright (C) 2023 Eclipse. All rights reserved.
+				<br />
+				You are receiving this email because you opted in via our website.
+				<br />
+				Our mailing address is:
+				<br />
+				Eclipse | 166 Parkview St Ikoyi, Lagos State, Nigeria
+			</mj-text>
+		</mj-container>
+	</mj-body>
+</mjml>

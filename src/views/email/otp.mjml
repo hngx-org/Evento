@@ -1,0 +1,39 @@
+<mjml>
+	<mj-body background-color="#f8f8f8">
+		<mj-section background-color="#fff" padding="106px 45px 110.5px 31px" border="1px solid #b7b7b7">
+			<mj-column width="670px">
+				<mj-image src="logo.svg" alt="Logo" width="100%" />
+				<mj-text font-size="32px" font-weight="600" color="#0f0f0f" line-height="40px" padding="8px 0">You are
+					almost there!</mj-text>
+				<mj-text font-size="14px" font-weight="400" color="#0f0f0f" line-height="24px" padding-bottom="10px">
+					Hello [[Name]],<br />
+					Welcome to Evento<br />
+					Use the following OTP code to complete your request.<br />
+					Please use the OTP code below: <mj-text style="color: #360789;">[[otp]]</mj-text><br />
+					Unleash the Extraordinary,<br />
+					Where moments become memories<br />
+					Get the Evento app to plan your events and stay up-to-date with details on the go.<br />
+					Download the app
+				</mj-text>
+				<mj-button background-color="transparent">
+					<img src="app-store.svg" alt="App store" />
+				</mj-button>
+				<mj-button background-color="transparent">
+					<img src="g-play.svg" alt="Google Play" />
+				</mj-button>
+				<mj-social display="flex" align="center" mode="horizontal">
+					<mj-social-element name="linkedin" href="#"></mj-social-element>
+					<mj-social-element name="xing" href="#"></mj-social-element>
+					<mj-social-element name="facebook" href="#"></mj-social-element>
+					<mj-social-element name="instagram" href="#"></mj-social-element>
+				</mj-social>
+				<mj-text font-size="10px" font-weight="400" color="#0f0f0f" line-height="14px" padding-top="2px">
+					Copyright (C) 2023 Evento. All rights reserved.<br />
+					You are receiving this email because you opted in via our website.<br />
+					Our mailing address is:<br />
+					Evento | 166 Parkview St Ikoyi, Lagos State, Nigeria
+				</mj-text>
+			</mj-column>
+		</mj-section>
+	</mj-body>
+</mjml>

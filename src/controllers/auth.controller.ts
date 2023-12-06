@@ -17,7 +17,7 @@ const path = require("path");
 const currentDir = path.resolve(__dirname, "..");
 
 // Then you can navigate to the desired template path
-const templatePath = path.join(currentDir, "views", "email", "verify.html");
+const templatePath = path.join(currentDir, "views", "email", "otp.mjml");
 
 interface CustomUser extends Express.User {
   userID: string;
@@ -302,7 +302,7 @@ export const generateOTP = async (
     });
 
     const emailVariables = {
-      userName: user.firstName,
+      Name: user.firstName,
       otp: token,
     };
 
