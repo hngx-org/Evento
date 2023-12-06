@@ -5,7 +5,6 @@ interface createEventsInterface {
   imageURL?: string;
   startDate: Date;
   endDate: Date;
-  time: Date;
   locationType: string;
   location: string;
   virtualLocationLink?: string;

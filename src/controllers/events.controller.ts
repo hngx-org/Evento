@@ -64,7 +64,6 @@ const createEventController: RequestHandler = async (req, res, next) => {
       imageURL,
       startDate,
       endDate,
-      time,
       locationType,
       location,
       virtualLocationLink,
@@ -96,8 +95,9 @@ const createEventController: RequestHandler = async (req, res, next) => {
         imageURL,
         startDate,
         endDate,
-        time,
+        locationType,
         location,
+        virtualLocationLink,
         capacity,
         eventType,
         organizer: {
@@ -115,6 +115,13 @@ const createEventController: RequestHandler = async (req, res, next) => {
             },
           },
         },
+        tickets: {
+          create: {
+            userID: organizerID,
+            ticketType,
+            ticketPrice,
+          },
+        },
       },
       include: {
         organizer: {
@@ -127,6 +134,13 @@ const createEventController: RequestHandler = async (req, res, next) => {
           },
         },
         Category: true,
+        tickets: {
+          select: {
+            ticketID: true,
+            ticketType: true,
+            ticketPrice: true,
+          },
+        },
       },
     });
 
@@ -220,12 +234,15 @@ const editEventController: RequestHandler = async (req, res, next) => {
       description,
       startDate,
       endDate,
-      time,
+      locationType,
       location,
+      virtualLocationLink,
       capacity,
       eventType,
       organizerID,
       categoryName,
+      ticketType,
+      ticketPrice,
     } = req.body as editEventsInterface;
 
     // Update the event
@@ -236,15 +253,11 @@ const editEventController: RequestHandler = async (req, res, next) => {
         description,
         startDate,
         endDate,
-        time,
+        locationType,
         location,
+        virtualLocationLink,
         capacity,
         eventType,
-        organizer: {
-          connect: {
-            userID: organizerID,
-          },
-        },
         Category: {
           connectOrCreate: {
             where: {
