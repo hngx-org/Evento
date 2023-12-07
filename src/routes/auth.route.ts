@@ -159,9 +159,11 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google"), (req, res) => {
     const token = generateToken(req.user);
-    res.cookie("token", token, { maxAge: 7 * 24 * 60 * 60 * 1000 })
-    res.cookie("userId", req.user!.userID, { maxAge: 7 * 24 * 60 * 60 * 1000 })
-    res.redirect("https://evento1.vercel.app/event-dashboard")
+    const { userID } = req.user as {userID: string};
+    res.cookie("token", token, { maxAge: 7 * 24 * 60 * 60 * 1000 });
+    
+    res.cookie("userId", userID, { maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.redirect("https://evento1.vercel.app/event-dashboard");
   }
 );
 
