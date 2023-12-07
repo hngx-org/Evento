@@ -156,10 +156,7 @@ router.get("/google", google);
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "https://evento1.vercel.app/event-dashboard",
-    failureRedirect: "https://evento1.vercel.app/",
-  })
+  passport.authenticate("google", oauthToken)
 );
 
 /**
