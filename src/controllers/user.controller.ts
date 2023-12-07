@@ -30,16 +30,34 @@ const generateConfirmationToken = (userID, hashedNewPassword) => {
 // Assuming your current file is in a folder called "src"
 const currentDir = path.resolve(__dirname, "..");
 
-// Then you can navigate to the desired template path
-const templatePath = path.join(currentDir, "views", "email", "verify.html");
+// Use the example to get the path to your template
+// const templatePath = path.join(currentDir, "views", "email", "verify.html");
 const verifyPasswordTemplate = path.join(
   currentDir,
   "views",
   "email",
-  "verifypassword.html"
+  "verifypassword.mjml"
 );
 
-console.log(templatePath);
+const passwordUpdatedPath = path.join(
+  currentDir,
+  "views",
+  "email",
+  "passwordupdated.mjml"
+);
+
+const preferencesUpdatedPath = path.join(
+  currentDir,
+  "views",
+  "email",
+  "preferencesupdated.mjml"
+);
+
+console.log(
+  verifyPasswordTemplate,
+  passwordUpdatedPath,
+  preferencesUpdatedPath
+);
 
 import {
   userInterface,
@@ -483,7 +501,7 @@ const updateUserPreferences = async (
         subject: "Preferences Updated Successfully",
         variables: emailVariables,
       },
-      templatePath
+      preferencesUpdatedPath
     );
 
     console.log(emailStatus);
@@ -580,7 +598,6 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
       select: {
         userID: true,
         displayName: true,
-        myEvents: true,
       },
     });
 
@@ -589,23 +606,25 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     //   delete user preferences
-    await prisma.preferences.delete({
+    const userPreferences = await prisma.preferences.findFirst({
       where: { userID },
     });
 
-    // Delete user events
-    // await Promise.all(
-    //   validUser.myEvents.map(async (eventID) => {
-    //     await prisma.event.delete({
-    //       where: { eventID },
-    //     });
-    //   })
-    // );
+    if (userPreferences) {
+      await prisma.preferences.delete({
+        where: { userID },
+      });
+    }
 
-    // delete users social links
-    await prisma.socialLink.deleteMany({
-      where: { userID: userID },
+    const userSocials = await prisma.socialLink.findFirst({
+      where: { userID },
     });
+
+    if (userSocials) {
+      await prisma.socialLink.deleteMany({
+        where: { userID: userID },
+      });
+    }
 
     // Delete the user
     const deletedUser = await prisma.user.delete({
@@ -698,13 +717,15 @@ const updateUserPassword = async (
     // Send the confirmation email
     const emailVariables = {
       userName: validUser.displayName,
-      verify: mailedToken,
+      verificationLink: mailedToken,
     };
+
+    console.log("email", emailVariables);
 
     const emailStatus = await emailService(
       {
         to: validUser.email,
-        subject: "Password Reset",
+        subject: "Password Change",
         variables: emailVariables,
       },
       verifyPasswordTemplate
@@ -719,7 +740,7 @@ const updateUserPassword = async (
       res,
       emailStatus,
       200,
-      "Password updated successfully"
+      "Password update initiated"
     );
   } catch (error) {
     return next(error);
@@ -786,6 +807,24 @@ const confirmPasswordChange = async (
       await prisma.verification.delete({
         where: { userID },
       });
+    }
+
+    //   send password updated email
+    const emailVariables = {
+      userName: updatedUser.displayName,
+    };
+
+    const emailStatus = await emailService(
+      {
+        to: updatedUser.email,
+        subject: "Password Updated",
+        variables: emailVariables,
+      },
+      passwordUpdatedPath
+    );
+
+    if (!emailStatus) {
+      throw new InternalServerError("Error changing password");
     }
 
     if (req.session) {

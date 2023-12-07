@@ -22,7 +22,6 @@ const mailtrapTransporter = nodemailer.createTransport({
 const username = process.env.MAILGUN_USERNAME;
 const pass = process.env.MAILGUN_PASSWORD;
 
-console.log(username, pass);
 const mailgunTransporter = nodemailer.createTransport({
   host: "smtp.mailgun.org",
   port: 465,
@@ -85,15 +84,9 @@ export const emailService = async (emailContent, templatePath) => {
     // Replace variables in the template
     const replacedHTML = replaceVariables(templateHTML, variables);
 
-    console.log(replacedHTML);
-
-    console.log(variables);
-
     // Convert MJML to HTML
     const mjmlOutput = mjml2html(replacedHTML);
     const dynamicHTML = mjmlOutput.html;
-
-    console.log("dynamic", dynamicHTML);
 
     const finalEmailContent = {
       from: "hello@Evento.com",
@@ -101,8 +94,6 @@ export const emailService = async (emailContent, templatePath) => {
       subject,
       html: dynamicHTML,
     };
-
-    // console.log(finalEmailContent);
 
     const emailStatus = await sendEmail(finalEmailContent);
     if (emailStatus) {

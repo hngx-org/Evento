@@ -14,14 +14,10 @@ import cron from "node-cron";
 import { Server } from "socket.io";
 import { createServer } from "http";
 
-
-
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
 
 const app = express();
-
-
 
 app.use(morgan("dev"));
 
@@ -62,16 +58,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 // app.use(authToken);
 
 //serve all routes dynamically using readdirsync
 readdirSync("./src/routes").map((path) => {
-  if (
-    !path.includes("auth") &&
-    !path.includes("category") &&
-    !path.includes("events")
-  ) {
+  if (!path.includes("auth")) {
     app.use("/api/v1/", authenticateJWT, require(`./routes/${path}`));
     // app.use("/api/v1/", require(`./routes/${path}`));
   } else {
@@ -85,14 +76,14 @@ const port = process.env.PORT || 3000;
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-   /* options */ 
+  /* options */
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
     credentials: false,
-  }
+  },
 });
-app.use(pgNotify(io))
+app.use(pgNotify(io));
 
 httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);

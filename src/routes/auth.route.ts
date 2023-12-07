@@ -8,6 +8,9 @@ import {
   verifyOTP,
   validateOTP,
   disableOTP,
+  resetPassword,
+  confirmUserExists,
+  updateUserPassword,
 } from "../controllers/auth.controller";
 
 import { confirmPasswordChange } from "../controllers/user.controller";
@@ -347,6 +350,113 @@ router.post("/validate-otp", validateOTP);
  */
 
 router.post("/disable-otp/:id", disableOTP);
+
+/**
+ * @swagger
+ * /api/v1/reset-password:
+ *   post:
+ *     summary: Reset password for a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Password reset link sent successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password reset link sent successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post("/reset-password", resetPassword);
+
+/**
+ * @swagger
+ * /api/v1/reset-password/confirm:
+ *   get:
+ *     summary: Confirm user exists
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: User exists
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User exists
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/reset-password/confirm", confirmUserExists);
+
+/**
+ * @swagger
+ * /api/v1/reset-password/update:
+ *   post:
+ *     summary: Update user password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userID:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password updated successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.patch("/reset-password/", updateUserPassword);
+
+/**
+ * @swagger
+ * /api/v1/user/password/confirm:
+ *   get:
+ *     summary: Confirm password change
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: Password change confirmed
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password change confirmed
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 router.get("/user/password/confirm", confirmPasswordChange);
 module.exports = router;
