@@ -8,6 +8,7 @@ import {
   verifyOTP,
   validateOTP,
   disableOTP,
+  generateToken
 } from "../controllers/auth.controller";
 
 import { confirmPasswordChange } from "../controllers/user.controller";
@@ -156,7 +157,10 @@ router.get("/google", google);
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", oauthToken)
+  passport.authenticate("google"), (req, res) => {
+    const token = generateToken(req.user);
+    res.send({user: req.user, token: token})
+  }
 );
 
 /**

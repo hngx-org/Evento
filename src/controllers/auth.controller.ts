@@ -195,7 +195,7 @@ function sendSignUpVerificationEmail(user: any) {
   );
 }
 
-function generateToken(user: any): string {
+export function generateToken(user: any): string {
   const userWithoutPassword = {
     id: user.userID,
   };
