@@ -13,6 +13,7 @@ import https from "https";
 import cron from "node-cron";
 import { Server } from "socket.io";
 import { createServer } from "http";
+import cookieParser from "cookie-parser";
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
@@ -50,10 +51,12 @@ app.use(cors());
 app.use(
   session({
     secret: process.env.JWT_SECRET || "secret",
-    resave: false,
+    resave: true,
     saveUninitialized: true,
   })
 );
+
+app.use(cookieParser());
 
 app.use(passport.initialize());
 app.use(passport.session());

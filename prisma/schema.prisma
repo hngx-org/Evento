@@ -48,7 +48,7 @@ model Event {
   startDate            DateTime
   endDate              DateTime
   locationType         String                 @default("Physical")
-  location             String
+  location             String?
   virtualLocationLink  String?
   capacity             Int
   eventType            String
