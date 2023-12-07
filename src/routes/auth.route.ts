@@ -8,7 +8,10 @@ import {
   verifyOTP,
   validateOTP,
   disableOTP,
-  generateToken
+  resetPassword,
+  confirmUserExists,
+  updateUserPassword,
+  generateToken,
 } from "../controllers/auth.controller";
 
 import { confirmPasswordChange } from "../controllers/user.controller";
@@ -157,11 +160,12 @@ router.get("/google", google);
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google"), (req, res) => {
+  passport.authenticate("google"),
+  (req, res) => {
     const token = generateToken(req.user);
-    const { userID } = req.user as {userID: string};
+    const { userID } = req.user as { userID: string };
     res.cookie("token", token, { maxAge: 7 * 24 * 60 * 60 * 1000 });
-    
+
     res.cookie("userId", userID, { maxAge: 7 * 24 * 60 * 60 * 1000 });
     res.redirect("https://evento1.vercel.app/event-dashboard");
   }
@@ -352,6 +356,113 @@ router.post("/validate-otp", validateOTP);
  */
 
 router.post("/disable-otp/:id", disableOTP);
+
+/**
+ * @swagger
+ * /api/v1/reset-password:
+ *   post:
+ *     summary: Reset password for a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Password reset link sent successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password reset link sent successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post("/reset-password", resetPassword);
+
+/**
+ * @swagger
+ * /api/v1/reset-password/confirm:
+ *   get:
+ *     summary: Confirm user exists
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: User exists
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User exists
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/reset-password/confirm", confirmUserExists);
+
+/**
+ * @swagger
+ * /api/v1/reset-password/update:
+ *   post:
+ *     summary: Update user password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userID:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password updated successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.patch("/reset-password/", updateUserPassword);
+
+/**
+ * @swagger
+ * /api/v1/user/password/confirm:
+ *   get:
+ *     summary: Confirm password change
+ *     tags: [Authentication]
+ *     responses:
+ *       '200':
+ *         description: Password change confirmed
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password change confirmed
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 router.get("/user/password/confirm", confirmPasswordChange);
 module.exports = router;

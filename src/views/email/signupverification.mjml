@@ -35,8 +35,7 @@
           line-height="1.1"
           padding="0px"
         >
-          Hi [[userName]],<br />
-          <strong>Your OTP Code is: [[otpCode]]</strong>
+          <strong>Verify Your Email</strong>
         </mj-text>
         <mj-spacer height="16px"></mj-spacer>
         <mj-text
@@ -46,9 +45,22 @@
           line-height="1.6"
           padding="0px"
         >
-          Use this code to verify your account. Please do not share this code
-          with anyone.
+          Hi [[userName]],<br />
+          Welcome to Evento! To complete your signup, please click the button
+          below to verify your email address.
         </mj-text>
+        <mj-spacer height="24px"></mj-spacer>
+        <mj-button
+          href="[[verificationLink]]"
+          align="left"
+          border-radius="40px"
+          font-size="24px"
+          line-height="1.75"
+          padding="0px"
+          text-decoration="none"
+        >
+          <strong>VERIFY EMAIL</strong>
+        </mj-button>
         <mj-spacer height="48px"></mj-spacer>
       </mj-column>
     </mj-section>
@@ -116,7 +128,8 @@
           padding-right="10px"
           padding-top="0px"
         >
-          Effortlessly organize your schedule and stay on top of your plans.<br /><br />Unsubscribe
+          Enjoy the full Evento experience. If you have any questions or
+          concerns, contact our support team.<br /><br />Unsubscribe
         </mj-text>
       </mj-column>
     </mj-section>
