@@ -159,7 +159,9 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google"), (req, res) => {
     const token = generateToken(req.user);
-    res.send({user: req.user, token: token})
+    res.cookie("token", token, { maxAge: 7 * 24 * 60 * 60 * 1000 })
+    res.cookie("userId", req.user, { maxAge: 7 * 24 * 60 * 60 * 1000 })
+    res.redirect("http://localhost:3001/dashboard")
   }
 );
 
