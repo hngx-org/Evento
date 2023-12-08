@@ -236,7 +236,7 @@ router.get("/protected", authenticateJWT, (req, res) => {
 /**
  * @swagger
  * /api/v1/generate-otp/{id}:
- *   get:
+ *   post:
  *     summary: Generate OTP for a user
  *     tags: [Authentication]
  *     parameters:
@@ -245,6 +245,15 @@ router.get("/protected", authenticateJWT, (req, res) => {
  *         schema:
  *           type: string
  *         description: User ID for OTP generation
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: OTP generated successfully
