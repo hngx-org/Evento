@@ -27,7 +27,6 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
       const newForbbidenError = new ForbiddenError("You must upload one image");
       next(newForbbidenError);
     }
-    console.log(req.file, "here");
     next();
   });
 };

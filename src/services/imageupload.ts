@@ -15,22 +15,16 @@ export const cloudinaryService = async (
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    console.log(file);
-
-    console.log("here Cloudinary");
-
     const urls = [];
 
     const dtauri = new DataUri();
 
     // Loop removed since there's only one file
     const dataUri = dtauri.format(path.extname(file.originalname), file.buffer);
-    console.log("here");
 
     const final_file = dataUri.content;
 
     const image = await cloudinary.v2.uploader.upload_large(final_file);
-    console.log(image);
 
     urls.push(image.secure_url);
 

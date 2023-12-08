@@ -53,12 +53,6 @@ const preferencesUpdatedPath = path.join(
   "preferencesupdated.mjml"
 );
 
-console.log(
-  verifyPasswordTemplate,
-  passwordUpdatedPath,
-  preferencesUpdatedPath
-);
-
 import {
   userInterface,
   socialInterface,
@@ -132,14 +126,6 @@ const getUserProfileById = async (
     );
   } catch (error) {
     //   check for prisma errors
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        console.log(
-          "There is a unique constraint violation, a new user cannot be created with this email"
-        );
-      }
-      console.log(error.message);
-    }
 
     next(error);
   }
@@ -238,8 +224,6 @@ const addSocialLinks = async (
       },
     });
 
-    console.log(existingSocialLink);
-
     if (existingSocialLink && existingSocialLink.length > 0) {
       // User has existing social links, update them
       const socialLinkID = existingSocialLink[0].linkID;
@@ -335,16 +319,11 @@ const uploadProfileImage: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    console.log("start");
-
     if (!req.file) {
       throw new BadRequestError("Please add a Profile Image");
     }
 
-    console.log(req.file);
-
     const userID = req.params.id;
-    console.log(userID);
     const file = req.file as any;
     const { service } = req.body;
 
@@ -356,15 +335,12 @@ const uploadProfileImage: RequestHandler = async (
       },
     });
 
-    console.log(validUser);
-
     if (!validUser) {
       throw new NotFoundError("User not found");
     }
 
     // call the cloudinary service
     const { urls } = await cloudinaryService(file, service);
-    console.log(urls);
     const data = await uploadProfileImageService(userID, urls);
 
     // extract the url from the data response
@@ -388,16 +364,11 @@ const uploadProfileCoverImage: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    console.log("start");
-
     if (!req.file) {
       throw new BadRequestError("Please add a Cover Image");
     }
 
-    console.log(req.file);
-
     const userID = req.params.id;
-    console.log(userID);
     const file = req.file as any;
     const { service } = req.body;
 
@@ -409,15 +380,12 @@ const uploadProfileCoverImage: RequestHandler = async (
       },
     });
 
-    console.log(validUser);
-
     if (!validUser) {
       throw new NotFoundError("User not found");
     }
 
     // call the cloudinary service
     const { urls } = await cloudinaryService(file, service);
-    console.log(urls);
     const data = await uploadCoverImageService(userID, urls);
 
     // extract the url from the data response
@@ -514,8 +482,6 @@ const updateUserPreferences = async (
       },
       preferencesUpdatedPath
     );
-
-    console.log(emailStatus);
 
     if (!emailService) {
       return new BadRequestError("Error sending email");
@@ -722,8 +688,6 @@ const updateUserPassword = async (
       verificationLink: mailedToken,
     };
 
-    console.log("email", emailVariables);
-
     const emailStatus = await emailService(
       {
         to: validUser.email,
@@ -834,7 +798,6 @@ const confirmPasswordChange = async (
         if (err) {
           throw new BadRequestError("Cannot Redirect User");
         }
-        console.log("session destroyed");
         return res.redirect("https://evento1.vercel.app");
       });
     }
