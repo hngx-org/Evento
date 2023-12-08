@@ -66,7 +66,10 @@ import {
   preferencesInterface,
 } from "../interfaces/user.interface";
 
-import { uploadProfileImageService } from "../services/profileimage";
+import {
+  uploadProfileImageService,
+  uploadCoverImageService,
+} from "../services/profileimage";
 import { cloudinaryService, deleteImage } from "../services/imageupload";
 
 // validate id
@@ -379,50 +382,58 @@ const uploadProfileImage: RequestHandler = async (
   }
 };
 
-// // upload profile picture controller
-// const uploadProfileImage = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   if (!req.files) return new BadRequestError(res, "add event image", 400);
-//   const userID = req.params.id;
-//   const files = req.files as any;
-//   const { service, userId } = req.body;
+const uploadProfileCoverImage: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log("start");
 
-//   try {
-//     const imagesRes = await cloudinaryService(files, req.body.service);
+    if (!req.file) {
+      throw new BadRequestError("Please add a Cover Image");
+    }
 
-//     // verify the user id
-//     const validUser = await prisma.user.findUnique({
-//       where: { userID },
-//       select: {
-//         userID: true,
-//       },
-//     });
+    console.log(req.file);
 
-//     if (!validUser) {
-//       throw new NotFoundError("User not found");
-//     }
+    const userID = req.params.id;
+    console.log(userID);
+    const file = req.file as any;
+    const { service } = req.body;
 
-//     // call the cloudinary service
-//     const { urls } = await cloudinaryService(files, service);
-//     const data = await uploadProfileImageService(userID, urls);
+    // verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID: userID },
+      select: {
+        userID: true,
+      },
+    });
 
-//     //   extract the url from the data response
-//     const profileImage = data;
+    console.log(validUser);
 
-//     ResponseHandler.success(
-//       res,
-//       profileImage,
-//       200,
-//       "User profile picture updated successfully"
-//     );
-//   } catch (error) {
-//     //   check for prisma errors
-//     next(error);
-//   }
-// };
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    // call the cloudinary service
+    const { urls } = await cloudinaryService(file, service);
+    console.log(urls);
+    const data = await uploadCoverImageService(userID, urls);
+
+    // extract the url from the data response
+    const coverImage = data;
+
+    ResponseHandler.success(
+      res,
+      coverImage,
+      200,
+      "User cover picture updated successfully"
+    );
+  } catch (error) {
+    // check for prisma errors
+    next(error);
+  }
+};
 
 // update contact information by user id
 const updateContactInformationByUserId = async (
@@ -505,15 +516,6 @@ const updateUserPreferences = async (
     );
 
     console.log(emailStatus);
-
-    //  send email
-    // const emailContent = {
-    //   to: validUser.email,
-    //   subject: "Welcome to Evento!",
-    //   userName: validUser.firstName,
-    //   additionalContent: `Preferences Updated Successfully`,
-    // };
-    // await emailService(emailContent)(req, res, next);
 
     if (!emailService) {
       return new BadRequestError("Error sending email");
@@ -893,6 +895,58 @@ const deleteUserProfileImage = async (
   }
 };
 
+// delete user cover image controller
+const deleteUserCoverImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userID = req.params.id;
+
+  try {
+    // Verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID },
+      select: {
+        userID: true,
+        coverImage: true,
+      },
+    });
+
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    // call the cloudinary service to delete the image
+    await deleteImage(validUser.coverImage);
+
+    if (!validUser.coverImage) {
+      throw new BadRequestError("User does not have a cover image");
+    }
+
+    // Delete the cover image
+    const deletedCoverImage = await prisma.user.update({
+      where: { userID },
+      data: {
+        coverImage: null,
+      },
+    });
+
+    if (!deletedCoverImage) {
+      throw new InternalServerError("Cover image could not be deleted");
+    }
+
+    ResponseHandler.success(
+      res,
+      deletedCoverImage.coverImage,
+      200,
+      "Cover image deleted successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 // upload profile picture controller
 export {
   getUserProfileById,
@@ -906,4 +960,6 @@ export {
   updateUserPassword,
   confirmPasswordChange,
   deleteUserProfileImage,
+  uploadProfileCoverImage,
+  deleteUserCoverImage,
 };
