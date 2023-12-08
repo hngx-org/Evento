@@ -66,7 +66,7 @@ const sendEmail = async (emailContent) => {
     }
 
     await transporter.sendMail(emailContent);
-    console.log("Email sent successfully.");
+
     return { message: "Email sent successfully." };
   } catch (error) {
     console.error("Error sending email:", error.message);
@@ -97,7 +97,6 @@ export const emailService = async (emailContent, templatePath) => {
 
     const emailStatus = await sendEmail(finalEmailContent);
     if (emailStatus) {
-      console.log("Email sent successfully.", emailStatus);
       return emailStatus;
     }
   } catch (error) {
@@ -105,16 +104,6 @@ export const emailService = async (emailContent, templatePath) => {
     throw new BadRequestError("Error sending email");
   }
 };
-
-// const replaceVariables = (template, variables) => {
-//   // Replace variables in the template
-//   Object.keys(variables).forEach((variable) => {
-//     const regex = new RegExp(`\\$\\{${variable}\\}`, "g");
-//     template = template.replace(regex, variables[variable]);
-//   });
-
-//   return template;
-// };
 
 const replaceVariables = (template, variables) => {
   // Replace variables in the template

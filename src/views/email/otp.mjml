@@ -25,7 +25,7 @@
         <mj-image
           align="left"
           padding="0px"
-          src="https://evento1.vercel.app/_next/static/media/logo.bcfdf523.svg"
+          src="/static/images/logo.svg"
           width="100px"
         ></mj-image>
         <mj-spacer height="96px"></mj-spacer>

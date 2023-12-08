@@ -287,7 +287,6 @@ export const generateOTP = async (
     const userID = req.params.id;
     const { email } = req.body;
 
-    console.log(userID);
     const user = await prisma.user.findUnique({
       where: {
         userID,
@@ -306,16 +305,11 @@ export const generateOTP = async (
 
     const compareEmail = email;
 
-    console.log(user.email, compareEmail);
-
     if (user.email !== compareEmail) {
       throw new BadRequestError("Please use a registered email");
     }
 
-    console.log("here");
     const token = generateRandomCode();
-
-    console.log(token);
 
     await prisma.oTP.upsert({
       where: {
@@ -335,8 +329,6 @@ export const generateOTP = async (
       otpCode: token,
     };
 
-    console.log(emailVariables);
-
     const emailStatus = await emailService(
       {
         to: user.email,
@@ -355,8 +347,6 @@ export const generateOTP = async (
         otp_enabled: true,
       },
     });
-
-    console.log(emailStatus);
 
     if (!emailService) {
       return new BadRequestError("Error sending email");
@@ -410,8 +400,6 @@ export const verifyOTP = async (
       deleteExpiredTokens();
       throw new BadRequestError("OTP has expired");
     }
-
-    console.log(otp);
 
     if (!otp) {
       throw new BadRequestError("Invalid OTP");
@@ -489,8 +477,6 @@ export const validateOTP = async (
       deleteExpiredTokens();
       throw new BadRequestError("OTP has expired");
     }
-
-    console.log(otp);
 
     if (!otp) {
       throw new BadRequestError("Invalid OTP");
@@ -584,8 +570,6 @@ export const resetPassword = async (
 ) => {
   const { email } = req.body;
 
-  console.log("here", email);
-
   try {
     // Verify the user id
     const validUser = await prisma.user.findUnique({
@@ -604,8 +588,6 @@ export const resetPassword = async (
 
     // Generate a confirmation token
     const confirmationToken = generateConfirmationToken(validUser.userID);
-
-    console.log("here", confirmationToken);
 
     //   if token exists, delete it
     const tokenExists = await prisma.verification.findUnique({
@@ -627,8 +609,6 @@ export const resetPassword = async (
       },
     });
 
-    console.log(validUser);
-
     const mailedToken = `https://evento-qo6d.onrender.com/api/v1/reset-password/confirm?token=${confirmationToken}`;
 
     // Send the confirmation email
@@ -636,8 +616,6 @@ export const resetPassword = async (
       userName: validUser.displayName,
       verificationLink: mailedToken,
     };
-
-    console.log("email variables", emailVariables);
 
     const emailStatus = await emailService(
       {
@@ -719,7 +697,6 @@ export const confirmUserExists = async (
         if (err) {
           throw new BadRequestError("Cannot Redirect User");
         }
-        console.log("session destroyed");
         return res.redirect(
           `https://evento1.vercel.app/resetpassword/${userID}/${token}`
         );
@@ -821,7 +798,6 @@ export const updateUserPassword = async (
         if (err) {
           throw new BadRequestError("Cannot Redirect User");
         }
-        console.log("session destroyed");
         return res.redirect("https://evento1.vercel.app");
       });
     }

@@ -194,13 +194,11 @@ router.get(
  *               $ref: '#/components/schemas/Error'
  */
 router.delete("/logout", function (req, res, next) {
-  console.log("loging out");
   if (req.session) {
     req.session.destroy((err) => {
       if (err) {
         return next(err);
       }
-      console.log("session destroyed");
       return res.redirect("https://evento1.vercel.app");
     });
   }
@@ -391,7 +389,7 @@ router.post("/reset-password", resetPassword);
 
 /**
  * @swagger
- * /api/v1/reset-password/confirm:
+ * /api/v1/reset-password:
  *   get:
  *     summary: Confirm user exists
  *     tags: [Authentication]
@@ -409,12 +407,12 @@ router.post("/reset-password", resetPassword);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/reset-password/confirm", confirmUserExists);
+router.get("/reset-password", confirmUserExists);
 
 /**
  * @swagger
- * /api/v1/reset-password/update:
- *   post:
+ * /api/v1/reset-password:
+ *   patch:
  *     summary: Update user password
  *     tags: [Authentication]
  *     requestBody:
@@ -442,11 +440,11 @@ router.get("/reset-password/confirm", confirmUserExists);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.patch("/reset-password/", updateUserPassword);
+router.patch("/reset-password", updateUserPassword);
 
 /**
  * @swagger
- * /api/v1/user/password/confirm:
+ * /api/v1/user/confirm-password:
  *   get:
  *     summary: Confirm password change
  *     tags: [Authentication]
@@ -465,5 +463,5 @@ router.patch("/reset-password/", updateUserPassword);
  *               $ref: '#/components/schemas/Error'
  */
 
-router.get("/user/password/confirm", confirmPasswordChange);
+router.get("/user/confirm-password", confirmPasswordChange);
 module.exports = router;
