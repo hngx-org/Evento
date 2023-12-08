@@ -12,3 +12,15 @@ export const uploadProfileImageService = async (
   });
   return { profileImage: urls[0] };
 };
+
+// upload cover picture controller
+export const uploadCoverImageService = async (
+  userId: string,
+  urls: string[]
+): Promise<{ coverImage: string }> => {
+  const user = await prisma.user.update({
+    where: { userID: userId },
+    data: { coverImage: urls[0] },
+  });
+  return { coverImage: urls[0] };
+};

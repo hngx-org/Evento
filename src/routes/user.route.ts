@@ -12,6 +12,8 @@ import {
   deleteUser,
   updateUserPassword,
   deleteUserProfileImage,
+  uploadProfileCoverImage,
+  deleteUserCoverImage,
 } from "./../controllers/user.controller";
 
 const router: Router = express.Router();
@@ -427,5 +429,86 @@ router.post("/user/password/change/:id", updateUserPassword);
  *               type: string
  */
 router.delete("/user/profile/image/delete/:id", deleteUserProfileImage);
+
+/**
+ * @swagger
+ * paths:
+ *   /api/v1/user/profile/cover/upload/{id}:
+ *     post:
+ *       summary: Upload a cover image for a user.
+ *       description: Uploads a cover image for the specified user ID.
+ *       tags: [User]
+ *       security:
+ *         - BearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *           description: The ID of the user for whom the cover image is being uploaded.
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           multipart/form-data:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 file:
+ *                   type: string
+ *                   format: binary
+ *       responses:
+ *         '200':
+ *           description: Cover image uploaded successfully.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   successful:
+ *                     type: boolean
+ *                   message:
+ *                     type: string
+ *                   urls:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *         '400':
+ *           description: Bad Request. The request is missing required parameters.
+ *         '500':
+ *           description: Internal Server Error. An error occurred while processing the request.
+ */
+router.post(
+  "/user/profile/cover/upload/:id",
+  uploadHandler,
+  uploadProfileCoverImage
+);
+
+/**
+ * @swagger
+ * /api/v1/user/profile/cover/delete/{id}:
+ *   delete:
+ *     summary: Delete User Cover Image by ID
+ *     description: Delete user cover image by user ID.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user profile to delete cover image
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ */
+
+router.delete("/user/profile/cover/delete/:id", deleteUserCoverImage);
 
 module.exports = router;
