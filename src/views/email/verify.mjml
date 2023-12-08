@@ -13,6 +13,10 @@
       href="https://fonts.googleapis.com/css?family=Cabin:normal,italic,bold&display=swap"
       name="Cabin"
     ></mj-font>
+    <mj-font
+      name="Chelsea Market"
+      href="https://fonts.googleapis.com/css2?family=Chelsea+Market&display=swap"
+    />
   </mj-head>
   <mj-body>
     <mj-section
@@ -23,20 +27,23 @@
       padding="40px"
     >
       <mj-column padding="0">
-        <mj-image
-          align="left"
+        <mj-text
+          color="#e0580c"
+          font-family="'Chelsea Market', 'Helvetica', 'Arial', sans-serif"
+          font-size="40px"
+          line-height="1.6"
           padding="0px"
-          src="https://evento1.vercel.app/_next/static/media/logo.bcfdf523.svg"
-          width="100px"
-        ></mj-image>
+        >
+          Evento
+        </mj-text>
         <mj-spacer height="96px"></mj-spacer>
         <mj-text
           color="#e0580c"
-          font-size="40px"
+          font-size="30px"
           line-height="1.1"
           padding="0px"
         >
-          <strong>Welcome <br />Onboard, [[userName]]</strong>
+          <strong>Welcome Onboard, [[userName]]</strong>
         </mj-text>
         <mj-spacer height="16px"></mj-spacer>
         <mj-text
@@ -73,16 +80,15 @@
       padding="20px"
     >
       <mj-column padding="0">
-        <mj-image
-          align="left"
-          padding-bottom="0px"
-          padding-left="10px"
-          padding-right="10px"
-          padding-top="0px"
+        <mj-text
+          color="#e0580c"
+          font-family="'Chelsea Market', 'Helvetica', 'Arial', sans-serif"
+          font-size="40px"
+          line-height="1.6"
           padding="0px"
-          src="https://evento1.vercel.app/_next/static/media/logo.bcfdf523.svg"
-          width="100px"
-        ></mj-image>
+        >
+          Evento
+        </mj-text>
       </mj-column>
       <mj-column padding="0">
         <mj-social
@@ -139,7 +145,7 @@
           padding-top="0px"
           padding="0px"
         >
-          Effortlessly organize your schedule an stay on top of your plans.<br /><br />Unsubscribe
+          Effortlessly organize your schedule and stay on top of your plans.<br /><br />Unsubscribe
         </mj-text>
       </mj-column>
     </mj-section>
