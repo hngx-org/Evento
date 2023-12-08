@@ -167,7 +167,8 @@ router.get(
     res.cookie("token", token, { maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.cookie("userId", userID, { maxAge: 7 * 24 * 60 * 60 * 1000 });
-    res.redirect("https://evento1.vercel.app/event-dashboard");
+    //   res.redirect("https://evento1.vercel.app/event-dashboard");
+    res.redirect("http://localhost:3000/event-dashboard");
   }
 );
 
