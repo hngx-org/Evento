@@ -113,7 +113,7 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * @swagger
- * /api/v1/user/profile/{id}:
+ * /api/v1/user/{id}:
  *   get:
  *     summary: Get User Profile by ID
  *     description: Retrieve user profile details by user ID.
@@ -164,11 +164,11 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
  *                 location:
  *                   type: string
  */
-router.get("/user/profile/:id", getUserProfileById);
+router.get("/user/:id/profile", getUserProfileById);
 
 /**
  * @swagger
- * /api/v1/user/profile/edit/{id}:
+ * /api/v1/user/{id}:
  *   patch:
  *     summary: Update User Profile by ID
  *     description: Update user profile details by user ID.
@@ -197,11 +197,11 @@ router.get("/user/profile/:id", getUserProfileById);
  *             schema:
  *               $ref: '#/components/schemas/UserProfileResponse'
  */
-router.patch("/user/profile/edit/:id", updateUserProfileById);
+router.patch("/user/:id", updateUserProfileById);
 
 /**
  * @swagger
- * /api/v1/user/profile/social/add/{id}:
+ * /api/v1/user/{id}/social:
  *   post:
  *     summary: Add Social Links to User Profile
  *     description: Add social links to the user profile by user ID.
@@ -230,11 +230,11 @@ router.patch("/user/profile/edit/:id", updateUserProfileById);
  *             schema:
  *               type: string
  */
-router.post("/user/profile/social/add/:id", addSocialLinks);
+router.post("/user/:id/social", addSocialLinks);
 
 /**
  * @swagger
- * /api/v1/user/profile/social/{id}:
+ * /api/v1/user/{id}/social:
  *   get:
  *     summary: Get Social Links by User ID
  *     description: Retrieve social links associated with the user profile by user ID.
@@ -256,12 +256,12 @@ router.post("/user/profile/social/add/:id", addSocialLinks);
  *             schema:
  *               type: string
  */
-router.get("/user/profile/social/:id", getSocialLinksByUserId);
+router.get("/user/:id/social", getSocialLinksByUserId);
 
 /**
  * @swagger
  * paths:
- *   /api/v1/user/profile/image/upload/{id}:
+ *   /api/v1/user/{id}/image:
  *     post:
  *       summary: Upload a profile image for a user.
  *       description: Uploads a profile image for the specified user ID.
@@ -306,15 +306,11 @@ router.get("/user/profile/social/:id", getSocialLinksByUserId);
  *         '500':
  *           description: Internal Server Error. An error occurred while processing the request.
  */
-router.post(
-  "/user/profile/image/upload/:id",
-  uploadHandler,
-  uploadProfileImage
-);
+router.post("/user/:id/image", uploadHandler, uploadProfileImage);
 
 /**
  * @swagger
- * /api/v1/user/profile/preferences/{id}:
+ * /api/v1/user/{id}/preferences:
  *   patch:
  *     summary: Update User Preferences by ID
  *     description: Update user preferences by user ID.
@@ -343,11 +339,11 @@ router.post(
  *             schema:
  *               type: string
  */
-router.post("/user/profile/preferences/:id", updateUserPreferences);
+router.post("/user/:id/preferences", updateUserPreferences);
 
 /**
  * @swagger
- * /api/v1/user/delete/{id}:
+ * /api/v1/user/{id}:
  *   delete:
  *     summary: Delete User by ID
  *     description: Delete user by user ID.
@@ -369,11 +365,11 @@ router.post("/user/profile/preferences/:id", updateUserPreferences);
  *             schema:
  *               type: string
  */
-router.delete("/user/delete/:id", deleteUser);
+router.delete("/user/:id", deleteUser);
 
 /**
  * @swagger
- * /api/v1/user/password/{id}:
+ * /api/v1/user/{id}/password:
  *   patch:
  *     summary: Update User Password by ID
  *     description: Update user password by user ID.
@@ -402,11 +398,11 @@ router.delete("/user/delete/:id", deleteUser);
  *             schema:
  *               type: string
  */
-router.post("/user/password/change/:id", updateUserPassword);
+router.post("/user/:id/password", updateUserPassword);
 
 /**
  * @swagger
- * /api/v1/user/profile/image/delete/{id}:
+ * /api/v1/user/{id}/image:
  *   delete:
  *     summary: Delete User Profile Image by ID
  *     description: Delete user profile image by user ID.
@@ -428,12 +424,12 @@ router.post("/user/password/change/:id", updateUserPassword);
  *             schema:
  *               type: string
  */
-router.delete("/user/profile/image/delete/:id", deleteUserProfileImage);
+router.delete("/user/:id/image", deleteUserProfileImage);
 
 /**
  * @swagger
  * paths:
- *   /api/v1/user/profile/cover/upload/{id}:
+ *   /api/v1/user/{id}/cover:
  *     post:
  *       summary: Upload a cover image for a user.
  *       description: Uploads a cover image for the specified user ID.
@@ -478,15 +474,11 @@ router.delete("/user/profile/image/delete/:id", deleteUserProfileImage);
  *         '500':
  *           description: Internal Server Error. An error occurred while processing the request.
  */
-router.post(
-  "/user/profile/cover/upload/:id",
-  uploadHandler,
-  uploadProfileCoverImage
-);
+router.post("/user/:id/cover", uploadHandler, uploadProfileCoverImage);
 
 /**
  * @swagger
- * /api/v1/user/profile/cover/delete/{id}:
+ * /api/v1/user/{id}/cover:
  *   delete:
  *     summary: Delete User Cover Image by ID
  *     description: Delete user cover image by user ID.
@@ -509,6 +501,6 @@ router.post(
  *               type: string
  */
 
-router.delete("/user/profile/cover/delete/:id", deleteUserCoverImage);
+router.delete("/user/:id/cover", deleteUserCoverImage);
 
 module.exports = router;

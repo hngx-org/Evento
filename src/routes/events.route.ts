@@ -30,11 +30,15 @@ eventsRouter.get("/events/:eventID", getEventController);
 eventsRouter.get("/events", getAllEventsController);
 
 // Edit an event route
-eventsRouter.put("/events/edit/:eventID", authenticateJWT, editEventController);
+eventsRouter.put(
+  "/events/:eventID/update",
+  authenticateJWT,
+  editEventController
+);
 
 // Delete an event route
 eventsRouter.delete(
-  "/events/delete/:eventID",
+  "/events/:eventID/delete",
   authenticateJWT,
   deleteEventController
 );
@@ -149,7 +153,7 @@ eventsRouter.post(
  *             schema:
  *               $ref: '#/components/schemas/NotFoundErrorResponse'
  *
- * /api/v1/events/edit/{eventID}:
+ * /api/v1/events/{eventID}/update:
  *   put:
  *     summary: Update an event
  *     tags: [Events]
@@ -209,7 +213,7 @@ eventsRouter.post(
  *             schema:
  *               $ref: '#/components/schemas/NotFoundErrorResponse'
  *
- * /api/v1/events/delete/{eventID}:
+ * /api/v1/events/{eventID}/delete:
  *   delete:
  *     summary: Delete an event by ID
  *     tags:
