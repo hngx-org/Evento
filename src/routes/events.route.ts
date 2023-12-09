@@ -21,7 +21,7 @@ eventsRouter.post(
 );
 
 // Create a new event route
-eventsRouter.post("/events/create", authenticateJWT, createEventController);
+eventsRouter.post("/events", authenticateJWT, createEventController);
 
 // Get a single event route
 eventsRouter.get("/events/:eventID", getEventController);
@@ -30,18 +30,10 @@ eventsRouter.get("/events/:eventID", getEventController);
 eventsRouter.get("/events", getAllEventsController);
 
 // Edit an event route
-eventsRouter.put(
-  "/events/:eventID/update",
-  authenticateJWT,
-  editEventController
-);
+eventsRouter.put("/events/:eventID", authenticateJWT, editEventController);
 
 // Delete an event route
-eventsRouter.delete(
-  "/events/:eventID/delete",
-  authenticateJWT,
-  deleteEventController
-);
+eventsRouter.delete("/events/:eventID", authenticateJWT, deleteEventController);
 
 // Register for an event route
 eventsRouter.post(
@@ -65,7 +57,10 @@ eventsRouter.post(
  * tags:
  *   name: Events
  *   description: Events Endpoints
- *
+ */
+
+/**
+ * @swagger
  * /api/v1/events/upload:
  *   post:
  *     summary: Upload an event image
@@ -94,8 +89,11 @@ eventsRouter.post(
  *                   description: The URL of the uploaded image
  *               example:
  *                 imageURL: "https://example.com/image.jpg"
- *
- * /api/v1/events/create:
+ */
+
+/**
+ * @swagger
+ * /api/v1/events:
  *   post:
  *     summary: Create a new event
  *     tags: [Events]
@@ -114,7 +112,10 @@ eventsRouter.post(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/EventResponse'
- *
+ */
+
+/**
+ * @swagger
  * /api/v1/events:
  *   get:
  *     summary: Get all events
@@ -152,8 +153,11 @@ eventsRouter.post(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundErrorResponse'
- *
- * /api/v1/events/{eventID}/update:
+ */
+
+/**
+ * @swagger
+ * /api/v1/events/{eventID}:
  *   put:
  *     summary: Update an event
  *     tags: [Events]
@@ -212,8 +216,11 @@ eventsRouter.post(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundErrorResponse'
- *
- * /api/v1/events/{eventID}/delete:
+ */
+
+/**
+ * @swagger
+ * /api/v1/events/{eventID}:
  *   delete:
  *     summary: Delete an event by ID
  *     tags:
@@ -267,6 +274,10 @@ eventsRouter.post(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/NotFoundErrorResponse'
+ */
+
+/**
+ * @swagger
  * /api/v1/events/register:
  *   post:
  *     summary: Register for an event
@@ -382,12 +393,14 @@ eventsRouter.post(
  *                 format: uri
  *               capacity:
  *                 type: number
- *               entranceFee:
- *                 type: number
- *               eventType:
- *                 type: string
- *               organizerID:
- *                 type: number
+ *               organizer:
+ *                 type: object
+ *               category:
+ *                 type: object
+ *               tickets:
+ *                 type: array
+ *                 items:
+ *                   type: object
  *           description: The data returned by the request
  *         message:
  *           type: string
@@ -407,9 +420,21 @@ eventsRouter.post(
  *             location: "Event location"
  *             virtualLocationLink: "https://example.com"
  *             capacity: 100
- *             entranceFee: 1000
- *             eventType: "Event type"
- *             organizerID: 1
+ *             organizerID: ab73f292-9267-4167-81f2-d85e9bd950d3
+ *             categoryCategoryID: 213af030-f7a5-46da-9cd7-6ecb8c0736b6
+ *             organizer:
+ *               userID: ab73f292-9267-4167-81f2-d85e9bd950d3
+ *               email: "test@mail.com"
+ *               profileImageURL: "https://example.com/image.jpg"
+ *               firstName: "John"
+ *               lastName: "Doe"
+ *             Category:
+ *               categoryID: 213af030-f7a5-46da-9cd7-6ecb8c0736b6
+ *               name: "Tech"
+ *             tickets:
+ *               - ticketID: 1
+ *                 ticketType: "Free"
+ *                 ticketPrice: 0
  *         message: "Sample success message"
  *     EventRequest:
  *       type: object
@@ -445,9 +470,6 @@ eventsRouter.post(
  *         capacity:
  *           type: number
  *           description: The event capacity
- *         eventType:
- *           type: string
- *           description: The event type
  *         organizerID:
  *           type: number
  *           description: The event organizer ID
@@ -470,7 +492,6 @@ eventsRouter.post(
  *         location: "Event location"
  *         virtualLocationLink: "https://example.com"
  *         capacity: 100
- *         eventType: "Event type"
  *         organizerID: "ab73f292-9267-4167-81f2-d85e9bd950d3"
  *         categoryName: "Tech"
  *         ticketType: "Free"
