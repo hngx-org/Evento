@@ -15,7 +15,7 @@ const eventsRouter = Router();
 
 // Upload event image route
 eventsRouter.post(
-  "/events/upload",
+  "/events/image",
   upload.single("event-image"),
   uploadEventImageController
 );
@@ -37,7 +37,7 @@ eventsRouter.delete("/events/:eventID", authenticateJWT, deleteEventController);
 
 // Register for an event route
 eventsRouter.post(
-  "/events/register",
+  "/events/registration",
   authenticateJWT,
   registerForEventController
 );
@@ -61,7 +61,7 @@ eventsRouter.post(
 
 /**
  * @swagger
- * /api/v1/events/upload:
+ * /api/v1/events/image:
  *   post:
  *     summary: Upload an event image
  *     tags: [Events]
@@ -278,7 +278,7 @@ eventsRouter.post(
 
 /**
  * @swagger
- * /api/v1/events/register:
+ * /api/v1/events/registration:
  *   post:
  *     summary: Register for an event
  *     tags: [Events]
