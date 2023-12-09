@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import bycript from "bcryptjs";
 import prisma from "../utils/prisma";
-import { BadRequestError, UnauthorizedError } from "../middlewares";
+import {
+  BadRequestError,
+  UnauthorizedError,
+  NotFoundError,
+  InternalServerError,
+} from "../middlewares";
 import { ResponseHandler } from "../utils/responsehandler";
 import passport from "../utils/passport";
 import deleteExpiredTokens from "../utils/deletetoken";
@@ -17,7 +22,31 @@ const path = require("path");
 const currentDir = path.resolve(__dirname, "..");
 
 // Then you can navigate to the desired template path
-const templatePath = path.join(currentDir, "views", "email", "otp.mjml");
+const generateOTPPath = path.join(currentDir, "views", "email", "otp.mjml");
+
+const passwordResetPath = path.join(
+  currentDir,
+  "views",
+  "email",
+  "passwordreset.mjml"
+);
+
+const passwordResetConfirmationPath = path.join(
+  currentDir,
+  "views",
+  "email",
+  "passwordresetconfirmation.mjml"
+);
+
+const signUpVerificationEmailPath = path.join(
+  currentDir,
+  "views",
+  "email",
+  "signupverification.mjml"
+);
+
+// Assuming you have a secret for JWT signing
+const jwtSecret = process.env.JWT_SECRET;
 
 interface CustomUser extends Express.User {
   userID: string;
@@ -191,7 +220,7 @@ function sendSignUpVerificationEmail(user: any) {
       subject: "Verify your email",
       variables: emailVariables,
     },
-    templatePath
+    signUpVerificationEmailPath
   );
 }
 
@@ -258,7 +287,6 @@ export const generateOTP = async (
     const userID = req.params.id;
     const { email } = req.body;
 
-    console.log(userID);
     const user = await prisma.user.findUnique({
       where: {
         userID,
@@ -277,16 +305,11 @@ export const generateOTP = async (
 
     const compareEmail = email;
 
-    console.log(user.email, compareEmail);
-
     if (user.email !== compareEmail) {
       throw new BadRequestError("Please use a registered email");
     }
 
-    console.log("here");
     const token = generateRandomCode();
-
-    console.log(token);
 
     await prisma.oTP.upsert({
       where: {
@@ -302,11 +325,9 @@ export const generateOTP = async (
     });
 
     const emailVariables = {
-      Name: user.firstName,
-      otp: token,
+      userName: user.firstName,
+      otpCode: token,
     };
-
-    console.log(emailVariables);
 
     const emailStatus = await emailService(
       {
@@ -314,7 +335,7 @@ export const generateOTP = async (
         subject: "Here is your OTP",
         variables: emailVariables,
       },
-      templatePath
+      generateOTPPath
     );
 
     await prisma.user.update({
@@ -326,8 +347,6 @@ export const generateOTP = async (
         otp_enabled: true,
       },
     });
-
-    console.log(emailStatus);
 
     if (!emailService) {
       return new BadRequestError("Error sending email");
@@ -381,8 +400,6 @@ export const verifyOTP = async (
       deleteExpiredTokens();
       throw new BadRequestError("OTP has expired");
     }
-
-    console.log(otp);
 
     if (!otp) {
       throw new BadRequestError("Invalid OTP");
@@ -461,8 +478,6 @@ export const validateOTP = async (
       throw new BadRequestError("OTP has expired");
     }
 
-    console.log(otp);
-
     if (!otp) {
       throw new BadRequestError("Invalid OTP");
     }
@@ -535,6 +550,257 @@ export const disableOTP = async (
       200,
       "OTP disabled successfully"
     );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Generate a JWT token for confirmation link
+const generateConfirmationToken = (userID) => {
+  const token = jwt.sign({ userID }, jwtSecret, {
+    expiresIn: "1h",
+  });
+  return token;
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email } = req.body;
+
+  try {
+    // Verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        userID: true,
+        displayName: true,
+        password: true,
+        email: true,
+      },
+    });
+
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    // Generate a confirmation token
+    const confirmationToken = generateConfirmationToken(validUser.userID);
+
+    //   if token exists, delete it
+    const tokenExists = await prisma.verification.findUnique({
+      where: { userID: validUser.userID },
+    });
+
+    if (tokenExists) {
+      const tokenExists = await prisma.verification.delete({
+        where: { userID: validUser.userID },
+      });
+    }
+
+    // Save the confirmation token in the database
+    await prisma.verification.create({
+      data: {
+        userID: validUser.userID,
+        verificationCode: confirmationToken,
+        status: "pending",
+      },
+    });
+
+    const mailedToken = `https://evento-qo6d.onrender.com/api/v1/reset-password/confirm?token=${confirmationToken}`;
+
+    // Send the confirmation email
+    const emailVariables = {
+      userName: validUser.displayName,
+      verificationLink: mailedToken,
+    };
+
+    const emailStatus = await emailService(
+      {
+        to: validUser.email,
+        subject: "Password Reset",
+        variables: emailVariables,
+      },
+      passwordResetPath
+    );
+
+    if (!emailStatus) {
+      throw new InternalServerError("Error sending email");
+    }
+
+    // Respond with success
+    return ResponseHandler.success(
+      res,
+      emailStatus,
+      200,
+      "Password reset link sent successfully"
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Function to check if a token has expired
+const isPasswordTokenExpired = (creationTime: Date): boolean => {
+  const expirationTime = new Date(creationTime);
+  expirationTime.setMinutes(expirationTime.getMinutes() + 60); // 5 minutes expiration
+  return new Date() > expirationTime;
+};
+
+// confirm password change
+export const confirmUserExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token } = req.query;
+
+  try {
+    // Verify the token
+    const decodedToken = jwt.verify(token, jwtSecret);
+
+    if (!decodedToken) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    const { userID } = decodedToken;
+
+    //   check if the token hasnt expired
+    const tokenExists = await prisma.verification.findUnique({
+      where: { userID },
+      select: {
+        verificationCode: true,
+        timestamp: true,
+      },
+    });
+
+    if (!tokenExists) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    //   check if the token hasnt not exceeded 1 hour
+    if (isPasswordTokenExpired(tokenExists.timestamp)) {
+      throw new BadRequestError("Token has expired");
+    }
+
+    //   compare the token with the one in the database
+    if (tokenExists.verificationCode !== token) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    // send the userid and token to the frontend with a redirect
+
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          throw new BadRequestError("Cannot Redirect User");
+        }
+        return res.redirect(
+          `https://evento1.vercel.app/resetpassword/${userID}/${token}`
+        );
+      });
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// confirm password change
+export const updateUserPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token, userID, newPassword } = req.body;
+
+  try {
+    // Verify the token
+    const decodedToken = jwt.verify(token, jwtSecret);
+
+    if (!decodedToken) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    const { userID } = decodedToken;
+
+    //   check if the token hasnt expired
+    const tokenExists = await prisma.verification.findUnique({
+      where: { userID },
+      select: {
+        verificationCode: true,
+        timestamp: true,
+      },
+    });
+
+    if (!tokenExists) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    //   check if the token hasnt not exceeded 1 hour
+    if (isPasswordTokenExpired(tokenExists.timestamp)) {
+      throw new BadRequestError("Token has expired");
+    }
+
+    //   compare the token with the one in the database
+    if (tokenExists.verificationCode !== token) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    if (newPassword.length < 6) {
+      throw new BadRequestError("Password must be at least 6 characters");
+    }
+
+    const hashedNewPassword = await bycript.hash(newPassword, 10);
+
+    // Update the user password
+    const updatedUser = await prisma.user.update({
+      where: { userID },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    if (!updatedUser) {
+      throw new InternalServerError("Password could not be updated");
+    }
+
+    if (tokenExists) {
+      // Delete the verification token
+      await prisma.verification.delete({
+        where: { userID },
+      });
+    }
+
+    //   send password updated email
+    const emailVariables = {
+      userName: updatedUser.displayName,
+    };
+
+    const emailStatus = await emailService(
+      {
+        to: updatedUser.email,
+        subject: "Password Reset Successfully",
+        variables: emailVariables,
+      },
+      passwordResetConfirmationPath
+    );
+
+    if (!emailStatus) {
+      throw new InternalServerError(
+        "Error sending password change confirmation email"
+      );
+    }
+
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          throw new BadRequestError("Cannot Redirect User");
+        }
+        return res.redirect("https://evento1.vercel.app");
+      });
+    }
   } catch (error) {
     return next(error);
   }

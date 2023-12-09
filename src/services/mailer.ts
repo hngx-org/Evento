@@ -22,7 +22,6 @@ const mailtrapTransporter = nodemailer.createTransport({
 const username = process.env.MAILGUN_USERNAME;
 const pass = process.env.MAILGUN_PASSWORD;
 
-console.log(username, pass);
 const mailgunTransporter = nodemailer.createTransport({
   host: "smtp.mailgun.org",
   port: 465,
@@ -67,7 +66,7 @@ const sendEmail = async (emailContent) => {
     }
 
     await transporter.sendMail(emailContent);
-    console.log("Email sent successfully.");
+
     return { message: "Email sent successfully." };
   } catch (error) {
     console.error("Error sending email:", error.message);
@@ -85,15 +84,9 @@ export const emailService = async (emailContent, templatePath) => {
     // Replace variables in the template
     const replacedHTML = replaceVariables(templateHTML, variables);
 
-    console.log(replacedHTML);
-
-    console.log(variables);
-
     // Convert MJML to HTML
     const mjmlOutput = mjml2html(replacedHTML);
     const dynamicHTML = mjmlOutput.html;
-
-    console.log("dynamic", dynamicHTML);
 
     const finalEmailContent = {
       from: "hello@Evento.com",
@@ -102,11 +95,8 @@ export const emailService = async (emailContent, templatePath) => {
       html: dynamicHTML,
     };
 
-    // console.log(finalEmailContent);
-
     const emailStatus = await sendEmail(finalEmailContent);
     if (emailStatus) {
-      console.log("Email sent successfully.", emailStatus);
       return emailStatus;
     }
   } catch (error) {
@@ -114,16 +104,6 @@ export const emailService = async (emailContent, templatePath) => {
     throw new BadRequestError("Error sending email");
   }
 };
-
-// const replaceVariables = (template, variables) => {
-//   // Replace variables in the template
-//   Object.keys(variables).forEach((variable) => {
-//     const regex = new RegExp(`\\$\\{${variable}\\}`, "g");
-//     template = template.replace(regex, variables[variable]);
-//   });
-
-//   return template;
-// };
 
 const replaceVariables = (template, variables) => {
   // Replace variables in the template

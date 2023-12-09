@@ -131,7 +131,7 @@ categoryRouter.get(
  *         events:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/EventResponse'
+ *             $ref: '#/components/schemas/CategoryEventResponse'
  *           description: The events associated with the category
  *       example:
  *         categoryID: "123e4567-e89b-12d3-a456-426614174000"
@@ -193,7 +193,7 @@ categoryRouter.get(
  *         error: "Internal Server Error"
  *         message: "Some server error"
  *
- *     EventResponse:
+ *     CategoryEventResponse:
  *       type: object
  *       properties:
  *         eventID:

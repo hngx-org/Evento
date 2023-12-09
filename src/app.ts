@@ -15,14 +15,10 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import cookieParser from "cookie-parser";
 
-
-
 const swaggerUi = require("swagger-ui-express");
 const swaggerOptions = require("./swagger");
 
 const app = express();
-
-
 
 app.use(morgan("dev"));
 
@@ -65,7 +61,6 @@ app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 // app.use(authToken);
 
 //serve all routes dynamically using readdirsync
@@ -88,14 +83,14 @@ const port = process.env.PORT || 3000;
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-   /* options */ 
+  /* options */
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
     credentials: false,
-  }
+  },
 });
-app.use(pgNotify(io))
+app.use(pgNotify(io));
 
 httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);

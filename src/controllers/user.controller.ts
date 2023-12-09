@@ -30,16 +30,28 @@ const generateConfirmationToken = (userID, hashedNewPassword) => {
 // Assuming your current file is in a folder called "src"
 const currentDir = path.resolve(__dirname, "..");
 
-// Then you can navigate to the desired template path
-const templatePath = path.join(currentDir, "views", "email", "verify.html");
+// Use the example to get the path to your template
+// const templatePath = path.join(currentDir, "views", "email", "verify.html");
 const verifyPasswordTemplate = path.join(
   currentDir,
   "views",
   "email",
-  "verifypassword.html"
+  "verifypassword.mjml"
 );
 
-console.log(templatePath);
+const passwordUpdatedPath = path.join(
+  currentDir,
+  "views",
+  "email",
+  "passwordupdated.mjml"
+);
+
+const preferencesUpdatedPath = path.join(
+  currentDir,
+  "views",
+  "email",
+  "preferencesupdated.mjml"
+);
 
 import {
   userInterface,
@@ -48,7 +60,10 @@ import {
   preferencesInterface,
 } from "../interfaces/user.interface";
 
-import { uploadProfileImageService } from "../services/profileimage";
+import {
+  uploadProfileImageService,
+  uploadCoverImageService,
+} from "../services/profileimage";
 import { cloudinaryService, deleteImage } from "../services/imageupload";
 
 // validate id
@@ -111,14 +126,6 @@ const getUserProfileById = async (
     );
   } catch (error) {
     //   check for prisma errors
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        console.log(
-          "There is a unique constraint violation, a new user cannot be created with this email"
-        );
-      }
-      console.log(error.message);
-    }
 
     next(error);
   }
@@ -217,8 +224,6 @@ const addSocialLinks = async (
       },
     });
 
-    console.log(existingSocialLink);
-
     if (existingSocialLink && existingSocialLink.length > 0) {
       // User has existing social links, update them
       const socialLinkID = existingSocialLink[0].linkID;
@@ -314,16 +319,11 @@ const uploadProfileImage: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    console.log("start");
-
     if (!req.file) {
       throw new BadRequestError("Please add a Profile Image");
     }
 
-    console.log(req.file);
-
     const userID = req.params.id;
-    console.log(userID);
     const file = req.file as any;
     const { service } = req.body;
 
@@ -335,15 +335,12 @@ const uploadProfileImage: RequestHandler = async (
       },
     });
 
-    console.log(validUser);
-
     if (!validUser) {
       throw new NotFoundError("User not found");
     }
 
     // call the cloudinary service
     const { urls } = await cloudinaryService(file, service);
-    console.log(urls);
     const data = await uploadProfileImageService(userID, urls);
 
     // extract the url from the data response
@@ -361,50 +358,50 @@ const uploadProfileImage: RequestHandler = async (
   }
 };
 
-// // upload profile picture controller
-// const uploadProfileImage = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   if (!req.files) return new BadRequestError(res, "add event image", 400);
-//   const userID = req.params.id;
-//   const files = req.files as any;
-//   const { service, userId } = req.body;
+const uploadProfileCoverImage: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.file) {
+      throw new BadRequestError("Please add a Cover Image");
+    }
 
-//   try {
-//     const imagesRes = await cloudinaryService(files, req.body.service);
+    const userID = req.params.id;
+    const file = req.file as any;
+    const { service } = req.body;
 
-//     // verify the user id
-//     const validUser = await prisma.user.findUnique({
-//       where: { userID },
-//       select: {
-//         userID: true,
-//       },
-//     });
+    // verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID: userID },
+      select: {
+        userID: true,
+      },
+    });
 
-//     if (!validUser) {
-//       throw new NotFoundError("User not found");
-//     }
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
 
-//     // call the cloudinary service
-//     const { urls } = await cloudinaryService(files, service);
-//     const data = await uploadProfileImageService(userID, urls);
+    // call the cloudinary service
+    const { urls } = await cloudinaryService(file, service);
+    const data = await uploadCoverImageService(userID, urls);
 
-//     //   extract the url from the data response
-//     const profileImage = data;
+    // extract the url from the data response
+    const coverImage = data;
 
-//     ResponseHandler.success(
-//       res,
-//       profileImage,
-//       200,
-//       "User profile picture updated successfully"
-//     );
-//   } catch (error) {
-//     //   check for prisma errors
-//     next(error);
-//   }
-// };
+    ResponseHandler.success(
+      res,
+      coverImage,
+      200,
+      "User cover picture updated successfully"
+    );
+  } catch (error) {
+    // check for prisma errors
+    next(error);
+  }
+};
 
 // update contact information by user id
 const updateContactInformationByUserId = async (
@@ -483,19 +480,8 @@ const updateUserPreferences = async (
         subject: "Preferences Updated Successfully",
         variables: emailVariables,
       },
-      templatePath
+      preferencesUpdatedPath
     );
-
-    console.log(emailStatus);
-
-    //  send email
-    // const emailContent = {
-    //   to: validUser.email,
-    //   subject: "Welcome to Evento!",
-    //   userName: validUser.firstName,
-    //   additionalContent: `Preferences Updated Successfully`,
-    // };
-    // await emailService(emailContent)(req, res, next);
 
     if (!emailService) {
       return new BadRequestError("Error sending email");
@@ -580,7 +566,6 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
       select: {
         userID: true,
         displayName: true,
-        myEvents: true,
       },
     });
 
@@ -589,23 +574,25 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     //   delete user preferences
-    await prisma.preferences.delete({
+    const userPreferences = await prisma.preferences.findFirst({
       where: { userID },
     });
 
-    // Delete user events
-    // await Promise.all(
-    //   validUser.myEvents.map(async (eventID) => {
-    //     await prisma.event.delete({
-    //       where: { eventID },
-    //     });
-    //   })
-    // );
+    if (userPreferences) {
+      await prisma.preferences.delete({
+        where: { userID },
+      });
+    }
 
-    // delete users social links
-    await prisma.socialLink.deleteMany({
-      where: { userID: userID },
+    const userSocials = await prisma.socialLink.findFirst({
+      where: { userID },
     });
+
+    if (userSocials) {
+      await prisma.socialLink.deleteMany({
+        where: { userID: userID },
+      });
+    }
 
     // Delete the user
     const deletedUser = await prisma.user.delete({
@@ -698,13 +685,13 @@ const updateUserPassword = async (
     // Send the confirmation email
     const emailVariables = {
       userName: validUser.displayName,
-      verify: mailedToken,
+      verificationLink: mailedToken,
     };
 
     const emailStatus = await emailService(
       {
         to: validUser.email,
-        subject: "Password Reset",
+        subject: "Password Change",
         variables: emailVariables,
       },
       verifyPasswordTemplate
@@ -719,7 +706,7 @@ const updateUserPassword = async (
       res,
       emailStatus,
       200,
-      "Password updated successfully"
+      "Password update initiated"
     );
   } catch (error) {
     return next(error);
@@ -788,12 +775,29 @@ const confirmPasswordChange = async (
       });
     }
 
+    //   send password updated email
+    const emailVariables = {
+      userName: updatedUser.displayName,
+    };
+
+    const emailStatus = await emailService(
+      {
+        to: updatedUser.email,
+        subject: "Password Updated",
+        variables: emailVariables,
+      },
+      passwordUpdatedPath
+    );
+
+    if (!emailStatus) {
+      throw new InternalServerError("Error changing password");
+    }
+
     if (req.session) {
       req.session.destroy((err) => {
         if (err) {
           throw new BadRequestError("Cannot Redirect User");
         }
-        console.log("session destroyed");
         return res.redirect("https://evento1.vercel.app");
       });
     }
@@ -854,6 +858,58 @@ const deleteUserProfileImage = async (
   }
 };
 
+// delete user cover image controller
+const deleteUserCoverImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userID = req.params.id;
+
+  try {
+    // Verify the user id
+    const validUser = await prisma.user.findUnique({
+      where: { userID },
+      select: {
+        userID: true,
+        coverImage: true,
+      },
+    });
+
+    if (!validUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    // call the cloudinary service to delete the image
+    await deleteImage(validUser.coverImage);
+
+    if (!validUser.coverImage) {
+      throw new BadRequestError("User does not have a cover image");
+    }
+
+    // Delete the cover image
+    const deletedCoverImage = await prisma.user.update({
+      where: { userID },
+      data: {
+        coverImage: null,
+      },
+    });
+
+    if (!deletedCoverImage) {
+      throw new InternalServerError("Cover image could not be deleted");
+    }
+
+    ResponseHandler.success(
+      res,
+      deletedCoverImage.coverImage,
+      200,
+      "Cover image deleted successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 // upload profile picture controller
 export {
   getUserProfileById,
@@ -867,4 +923,6 @@ export {
   updateUserPassword,
   confirmPasswordChange,
   deleteUserProfileImage,
+  uploadProfileCoverImage,
+  deleteUserCoverImage,
 };
