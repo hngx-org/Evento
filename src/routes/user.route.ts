@@ -393,7 +393,7 @@ router.delete("/user/:id", deleteUser);
  *             schema:
  *               type: string
  */
-router.post("/user/:id/password", updateUserPassword);
+router.patch("/user/:id/password", updateUserPassword);
 
 /**
  * @swagger
