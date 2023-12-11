@@ -104,6 +104,7 @@ const getUserProfileById = async (
         slug: true,
         role: true,
         location: true,
+        coverImage: true,
       },
     });
 
