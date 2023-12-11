@@ -162,12 +162,6 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
  *                   type: string
  *                 location:
  *                   type: string
- */
-router.get("/user/:id/profile", getUserProfileById);
-
-/**
- * @swagger
- * /api/v1/user/{id}:
  *   patch:
  *     summary: Update User Profile by ID
  *     description: Update user profile details by user ID.
@@ -196,6 +190,8 @@ router.get("/user/:id/profile", getUserProfileById);
  *             schema:
  *               $ref: '#/components/schemas/UserProfileResponse'
  */
+router.get("/user/:id", getUserProfileById);
+
 router.patch("/user/:id", updateUserProfileById);
 
 /**
