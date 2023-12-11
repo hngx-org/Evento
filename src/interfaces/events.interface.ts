@@ -9,7 +9,6 @@ interface createEventsInterface {
   location?: string;
   virtualLocationLink?: string;
   capacity: number;
-  eventType: string;
   organizerID: string;
   categoryName?: string;
   ticketType: string;

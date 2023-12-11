@@ -4,13 +4,12 @@ import {
   createEventsInterface,
   editEventsInterface,
 } from "../interfaces/events.interface";
-// import { createEventsService } from "../services/events.service";
 import { BadRequestError, NotFoundError, ConflictError } from "../middlewares";
 import { ResponseHandler } from "../utils";
 import { cloudinary } from "../services/events.service";
 import { unlink } from "node:fs";
 
-const { event } = new PrismaClient();
+const { event, ticket } = new PrismaClient();
 
 // Controller for uploading event image
 const uploadEventImageController: RequestHandler = async (req, res, next) => {
@@ -68,7 +67,6 @@ const createEventController: RequestHandler = async (req, res, next) => {
       location,
       virtualLocationLink,
       capacity,
-      eventType,
       organizerID,
       categoryName,
       ticketType,
@@ -99,7 +97,6 @@ const createEventController: RequestHandler = async (req, res, next) => {
         location,
         virtualLocationLink,
         capacity,
-        eventType,
         organizer: {
           connect: {
             userID: organizerID,
@@ -120,6 +117,11 @@ const createEventController: RequestHandler = async (req, res, next) => {
             userID: organizerID,
             ticketType,
             ticketPrice,
+          },
+        },
+        participants: {
+          connect: {
+            userID: organizerID,
           },
         },
       },
@@ -182,6 +184,13 @@ const getEventController: RequestHandler = async (req, res, next) => {
           },
         },
         Category: true,
+        tickets: {
+          select: {
+            ticketID: true,
+            ticketType: true,
+            ticketPrice: true,
+          },
+        },
       },
     });
 
@@ -212,6 +221,14 @@ const getAllEventsController: RequestHandler = async (req, res, next) => {
             lastName: true,
           },
         },
+        Category: true,
+        tickets: {
+          select: {
+            ticketID: true,
+            ticketType: true,
+            ticketPrice: true,
+          },
+        },
       },
     });
 
@@ -238,7 +255,6 @@ const editEventController: RequestHandler = async (req, res, next) => {
       location,
       virtualLocationLink,
       capacity,
-      eventType,
       organizerID,
       categoryName,
       ticketType,
@@ -257,7 +273,6 @@ const editEventController: RequestHandler = async (req, res, next) => {
         location,
         virtualLocationLink,
         capacity,
-        eventType,
         Category: {
           connectOrCreate: {
             where: {
@@ -281,7 +296,7 @@ const editEventController: RequestHandler = async (req, res, next) => {
     ResponseHandler.success(
       res,
       updatedEvent,
-      201,
+      200,
       "Event updated successfully."
     );
   } catch (error) {
@@ -294,6 +309,11 @@ const deleteEventController: RequestHandler = async (req, res, next) => {
   try {
     // Destructure the event ID from the request params
     const { eventID } = req.params;
+
+    // Delete the event tickets
+    await ticket.deleteMany({
+      where: { eventID },
+    });
 
     // Delete the event
     const deletedEvent = await event.delete({
@@ -380,6 +400,13 @@ const registerForEventController: RequestHandler = async (req, res, next) => {
           },
         },
         Category: true,
+        tickets: {
+          select: {
+            ticketID: true,
+            ticketType: true,
+            ticketPrice: true,
+          },
+        },
       },
     });
 
