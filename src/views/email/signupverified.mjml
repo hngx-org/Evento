@@ -1,0 +1,135 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-all font-family="'Kanit', 'Helvetica', 'Arial', sans-serif"></mj-all>
+      <mj-button background-color="#2B2B2B"></mj-button>
+      <mj-text color="#2B2B2B"></mj-text>
+    </mj-attributes>
+    <mj-font
+      href="https://fonts.googleapis.com/css?family=Kanit:normal,italic,bold&display=swap"
+      name="Kanit"
+    ></mj-font>
+    <mj-font
+      href="https://fonts.googleapis.com/css?family=Cabin:normal,italic,bold&display=swap"
+      name="Cabin"
+    ></mj-font>
+    <mj-font
+      name="Chelsea Market"
+      href="https://fonts.googleapis.com/css2?family=Chelsea+Market&display=swap"
+    />
+  </mj-head>
+  <mj-body>
+    <mj-section
+      padding-bottom="100px"
+      padding-left="40px"
+      padding-right="40px"
+      padding-top="48px"
+    >
+      <mj-column>
+        <mj-text
+          color="#e0580c"
+          font-family="'Chelsea Market', 'Helvetica', 'Arial', sans-serif"
+          font-size="40px"
+          line-height="1.6"
+          padding="0px"
+        >
+          Evento
+        </mj-text>
+        <mj-spacer height="96px"></mj-spacer>
+        <mj-text
+          color="#e0580c"
+          font-size="30px"
+          line-height="1.1"
+          padding="0px"
+        >
+          <strong>Account Verified Successful</strong>
+        </mj-text>
+        <mj-spacer height="16px"></mj-spacer>
+        <mj-text
+          color="#e0580c"
+          font-family="'Cabin', 'Helvetica', 'Arial', sans-serif"
+          font-size="24px"
+          line-height="1.6"
+          padding="0px"
+        >
+          Hi [[userName]],<br />
+          Your account has been verified successfully. You can proceed to Evento
+          and create events.
+        </mj-text>
+        <mj-spacer height="48px"></mj-spacer>
+      </mj-column>
+    </mj-section>
+
+    <mj-section
+      padding-bottom="72px"
+      padding-left="30px"
+      padding-right="30px"
+      padding-top="2px"
+    >
+      <mj-column>
+        <mj-text
+          color="#e0580c"
+          font-family="'Chelsea Market', 'Helvetica', 'Arial', sans-serif"
+          font-size="40px"
+          line-height="1.6"
+          padding="0px"
+        >
+          Evento
+        </mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-social
+          align="right"
+          font-size="15px"
+          icon-padding="6px"
+          icon-size="34px"
+          inner-padding="5px"
+          mode="horizontal"
+        >
+          <mj-social-element
+            src="https://cdn.getvero.com/dd-editor/ui-assets/icons/social/facebook.png"
+            alt="https://www.facebook.com/"
+            background-color="#5B5B5B"
+            border-radius="32px"
+            href="https://www.facebook.com/"
+            name="facebook-noshare"
+            title="https://www.facebook.com/"
+          ></mj-social-element>
+          <mj-social-element
+            src="https://cdn.getvero.com/dd-editor/ui-assets/icons/social/google-plus.png"
+            alt="https://www.google.com/"
+            background-color="#5B5B5B"
+            border-radius="32px"
+            href="https://www.google.com/"
+            name="google-noshare"
+            title="https://www.google.com/"
+          ></mj-social-element>
+          <mj-social-element
+            src="https://cdn.getvero.com/dd-editor/ui-assets/icons/social/twitter.png"
+            alt="https://www.twitter.com/"
+            background-color="#5B5B5B"
+            border-radius="32px"
+            href="https://www.twitter.com/"
+            name="twitter-noshare"
+            title="https://www.twitter.com/"
+          ></mj-social-element>
+        </mj-social>
+        <mj-spacer height="16px"></mj-spacer>
+        <mj-text
+          align="right"
+          color="#5B5B5B"
+          font-family="'Cabin', 'Helvetica', 'Arial', sans-serif"
+          font-size="14px"
+          line-height="1.5"
+          padding-bottom="0px"
+          padding-left="10px"
+          padding-right="10px"
+          padding-top="0px"
+        >
+          Keep your account secure. If you have any questions or concerns,
+          contact our support team.<br /><br />Unsubscribe
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
