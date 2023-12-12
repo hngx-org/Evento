@@ -38,6 +38,13 @@ const passwordResetConfirmationPath = path.join(
   "passwordresetconfirmation.mjml"
 );
 
+const signupverified = path.join(
+  currentDir,
+  "views",
+  "email",
+  "signupverified.mjml"
+);
+
 const signUpVerificationEmailPath = path.join(
   currentDir,
   "views",
@@ -208,20 +215,163 @@ async function loginUser(req: Request, user: any) {
   });
 }
 
-function sendSignUpVerificationEmail(user: any) {
-  const emailVariables = {
-    userName: user.firstName,
-    verificationLink: `${process.env.CLIENT_URL}/verify/${user.userID}`,
-  };
 
-  return emailService(
-    {
-      to: user.email,
-      subject: "Verify your email",
-      variables: emailVariables,
-    },
-    signUpVerificationEmailPath
-  );
+const  sendSignUpVerificationEmail = async(user: any) => {
+  try {
+    //if user is already verified
+  
+    
+    const confirmationToken = generateConfirmationToken(user.userID);
+  
+      //   if token exists, delete it
+      await prisma.verification.upsert(
+      {
+        where: { userID: user.userID },
+        update: {
+          verificationCode: confirmationToken,
+          status: "pending",
+        },
+        create: {
+          userID: user.userID,
+          verificationCode: confirmationToken,
+          status: "pending",
+        },
+      });
+      
+      const mailedToken = `https://evento-qo6d.onrender.com/api/v1/verify?token=${confirmationToken}`;
+  
+    const emailVariables = {
+      userName: user.firstName,
+      verificationLink: mailedToken,
+    };
+  
+    emailService(
+      {
+        to: user.email,
+        subject: "Verify Your Evento Account",
+        variables: emailVariables,
+      },
+      signUpVerificationEmailPath
+    );
+
+    
+
+  } catch (error) {
+    console.log(error)
+  }
+  
+}
+
+export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token } = req.query;
+
+    // Verify the token
+    const decodedToken = jwt.verify(token, jwtSecret);
+
+    if (!decodedToken) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    const { userID } = decodedToken;
+
+    //   check if the token hasnt expired
+    const tokenExists = await prisma.verification.findUnique({
+      where: { userID },
+      select: {
+        verificationCode: true,
+        timestamp: true,
+      },
+    });
+
+    if (!tokenExists) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    //   check if the token hasnt not exceeded 1 hour
+    if (isPasswordTokenExpired(tokenExists.timestamp)) {
+      throw new BadRequestError("Token has expired");
+    }
+
+    //   compare the token with the one in the database
+    if (tokenExists.verificationCode !== token) {
+      throw new BadRequestError("Invalid token");
+    }
+
+    // Update the user password
+    const updatedUser = await prisma.user.update({
+      where: { userID },
+      data: {
+        isVerified: true,
+      },
+    });
+
+    if (!updatedUser) {
+      throw new InternalServerError("User could not be verified");
+    }
+
+    if (tokenExists) {
+      // Delete the verification token
+      await prisma.verification.delete({
+        where: { userID }
+      });
+    }
+
+    //   send password updated email
+    const emailVariables = {
+      userName: updatedUser.firstName
+    };
+
+    const emailStatus = await emailService(
+      {
+        to: updatedUser.email,
+        subject: "Account Verified Successfully",
+        variables: emailVariables,
+      },
+      signupverified
+    );
+
+    if (!emailStatus) {
+      throw new InternalServerError(
+        "Error sending password change confirmation email"
+      );
+    }
+    res.redirect('https://evento1.vercel.app/dashboard');
+    // return ResponseHandler.success(
+    //   res,
+    //   updatedUser,
+    //   200,
+    //   "User verified successfully"
+    // );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const sendSignUpVerification = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userID } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        userID: userID,
+      },
+    });
+    if (!user) {
+      throw new BadRequestError("User does not exist");
+    }
+
+    sendSignUpVerificationEmail(user);
+
+    return ResponseHandler.success(
+      res,
+      user.userID,
+      200,
+      "Verification email sent successfully"
+    );
+  } catch (error) {
+    return next(error);
+  }
 }
 
 export function generateToken(user: any): string {
@@ -593,6 +743,8 @@ export const resetPassword = async (
     const tokenExists = await prisma.verification.findUnique({
       where: { userID: validUser.userID },
     });
+
+
 
     if (tokenExists) {
       const tokenExists = await prisma.verification.delete({

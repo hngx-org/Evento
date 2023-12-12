@@ -5,7 +5,7 @@ import { pgClient } from "../utils/dbClient";
 import createSubscriber from "pg-listen";
 import "dotenv/config";
 import prisma from '../utils/prisma';
-import { createNotification, updateReadStatus } from '../controllers/notifications.controller';
+import { createNotification, updateReadStatus, getAllUserNotifications } from '../controllers/notifications.controller';
 import { NotificationType } from '@prisma/client';
 
 
@@ -13,6 +13,23 @@ import { NotificationType } from '@prisma/client';
 
 
 const pgNotify = (io) => {
+  
+  io.on('connection', function(socket){
+    console.log(socket.id); // same respective alphanumeric id...
+    let userId;
+    socket.on('userId', function(userId){
+      console.log(userId);
+      socket.join(userId);
+     
+      getAllUserNotifications(userId).then((notifications) => { 
+        console.log(notifications)
+        socket.in(userId).emit('notifications', notifications);
+      }).catch((err) => {
+        console.error(err);
+      });
+    })
+   
+ });
    // Connect to PostgreSQL
   pgClient.connect().then(() => {
     console.log("Connected to Postgres");
@@ -23,16 +40,24 @@ const pgNotify = (io) => {
     const message = "You have successeffuly created a new event";
     const type: NotificationType = "EVENT_REGISTRATION";
     const userId = payload.organizerID;
-
+  
+    
     createNotification(userId, type, message).then((notification) => {
-      console.log(notification);
 
-      io.emit("new_event", payload, {
+
+      io.in(userId).emit("new_event", {
+        notificationId: notification.id,
         type: "EVENT_REGISTRATION",
         message: "You have successeffuly created a new event",
       }); // Emit the payload to connected clients
 
-   
+      getAllUserNotifications(userId).then((notifications) => { 
+        console.log(notifications)
+        io.in(userId).emit('notifications', notifications);
+      }).catch((err) => {
+        console.error(err);
+      });
+      
       // Emit the payload to connected clients
     }).catch((err) => {
       console.error(err);

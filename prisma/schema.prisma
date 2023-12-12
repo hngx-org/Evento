@@ -24,6 +24,7 @@ model User {
     location                String?
     otp_enabled             Boolean                   @default(false)
     otp_verified            Boolean                   @default(false)
+    isVerified              Boolean                   @default(false)
     myEvents                Event[]
     OTP                     OTP?
     PasswordReset           PasswordReset?

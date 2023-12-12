@@ -12,6 +12,8 @@ import {
   confirmUserExists,
   updateUserPassword,
   generateToken,
+  sendSignUpVerification,
+  verifyUser
 } from "../controllers/auth.controller";
 
 import { confirmPasswordChange } from "../controllers/user.controller";
@@ -233,6 +235,78 @@ router.post("/authorize", oauthToken);
 router.get("/protected", authenticateJWT, (req, res) => {
   res.send({ msg: "I am protected and you are authorized" });
 });
+
+
+/**
+ * @swagger
+ * /api/v1/signupverification/{userId}:
+ *   post:
+ *     summary: Generate OTP for a user
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: User ID for OTP generation
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OTP generated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP generated successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.get("/signupverification/:userID", sendSignUpVerification);
+/**
+ * @swagger
+ * /api/v1/verify/:userID:
+ *   post:
+ *     summary: Verify user account
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *               userID:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP verified successfully
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.get("/verify", verifyUser);
 
 /**
  * @swagger
