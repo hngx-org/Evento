@@ -152,13 +152,14 @@ try {
 
 export const createNotification = async (userId: string, type: NotificationType, message: string) => {
     try {
-        await prisma.notification.create({
+        const notifcation = await prisma.notification.create({
             data: {
                 userId: userId,
                 type: type,
                 message: message,
             },
         });
+        return notifcation;
     } catch (error) {
         console.error(`Failed to create notification for user ${userId}, type ${type}: ${error.message}`);
         throw error;
@@ -179,4 +180,37 @@ export const updateReadStatus = async (notificationId: string, read: boolean) =>
         throw error;
     }
 }
-    
+
+export const getAllUserNotifications = async (userId: string ) => {
+    try {
+        const notifications = await prisma.notification.findMany({
+            where: {
+                userId: userId,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+        return notifications;
+    } catch (error) {
+        throw error;
+    }
+}
+
+//get all notifcations for user
+export const getUserNotifications = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.params.userId;
+        const notifications = await prisma.notification.findMany({
+            where: {
+                userId: userId,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+        ResponseHandler.success(res, notifications, 200, "Notifications retrieved successfully");
+    } catch (error) {
+        next(error);
+    }
+}

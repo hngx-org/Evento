@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { updateNotificationPreferences, getNotificationPreferences } from '../controllers/notifications.controller';
+import { updateNotificationPreferences, getNotificationPreferences, getUserNotifications } from '../controllers/notifications.controller';
 
 const router  = Router();
 
@@ -268,5 +268,9 @@ const router  = Router();
 router.put('/settings/:userId/notifications', updateNotificationPreferences);
 
 router.get('/settings/:userId/notifications', getNotificationPreferences);
+
+router.get('/notifications/:userId', getUserNotifications)
+
+
 
 module.exports = router;
