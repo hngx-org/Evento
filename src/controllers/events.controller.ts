@@ -15,7 +15,7 @@ const { event, ticket } = new PrismaClient();
 const uploadEventImageController: RequestHandler = async (req, res, next) => {
   try {
     // Destructure the image file from the request body
-    const { path } = req.file;
+    const { path } = req.file as Express.Multer.File;
 
     // Check if the image file is not present in the request body
     if (!path) {
@@ -259,6 +259,7 @@ const editEventController: RequestHandler = async (req, res, next) => {
       categoryName,
       ticketType,
       ticketPrice,
+      ticketID,
     } = req.body as editEventsInterface;
 
     // Update the event
@@ -283,12 +284,30 @@ const editEventController: RequestHandler = async (req, res, next) => {
             },
           },
         },
+        tickets: {
+          update: {
+            where: {
+              ticketID,
+            },
+            data: {
+              ticketType,
+              ticketPrice,
+            },
+          },
+        },
       },
       select: {
         eventID: true,
         title: true,
         description: true,
         Category: true,
+        tickets: {
+          select: {
+            ticketID: true,
+            ticketType: true,
+            ticketPrice: true,
+          },
+        },
       },
     });
 

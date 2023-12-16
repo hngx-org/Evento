@@ -10,6 +10,13 @@ import {
 } from "../controllers/events.controller";
 import { upload } from "../services/events.service";
 import { authenticateJWT } from "../middlewares";
+// Request Validations Imports
+import {
+  validateEventId,
+  validateCreateEventsRequest,
+  validateUpdateEventsRequest,
+  validateRegisterForEventRequest,
+} from "../middlewares/validations/events.zod";
 
 const eventsRouter = Router();
 
@@ -21,16 +28,26 @@ eventsRouter.post(
 );
 
 // Create a new event route
-eventsRouter.post("/events", authenticateJWT, createEventController);
+eventsRouter.post(
+  "/events",
+  authenticateJWT,
+  validateCreateEventsRequest,
+  createEventController
+);
 
 // Get a single event route
-eventsRouter.get("/events/:eventID", getEventController);
+eventsRouter.get("/events/:eventID", validateEventId, getEventController);
 
 // Get all events route
 eventsRouter.get("/events", getAllEventsController);
 
 // Edit an event route
-eventsRouter.put("/events/:eventID", authenticateJWT, editEventController);
+eventsRouter.put(
+  "/events/:eventID",
+  authenticateJWT,
+  validateUpdateEventsRequest,
+  editEventController
+);
 
 // Delete an event route
 eventsRouter.delete("/events/:eventID", authenticateJWT, deleteEventController);
@@ -39,6 +56,7 @@ eventsRouter.delete("/events/:eventID", authenticateJWT, deleteEventController);
 eventsRouter.post(
   "/events/registration",
   authenticateJWT,
+  validateRegisterForEventRequest,
   registerForEventController
 );
 
@@ -471,7 +489,8 @@ eventsRouter.post(
  *           type: number
  *           description: The event capacity
  *         organizerID:
- *           type: number
+ *           type: string
+ *           format: uuid
  *           description: The event organizer ID
  *         categoryName:
  *           type: string
@@ -482,6 +501,10 @@ eventsRouter.post(
  *         ticketPrice:
  *           type: number
  *           description: The event ticket price
+ *         ticketID:
+ *           type: string
+ *           format: uuid
+ *           description: The event ticket ID
  *       example:
  *         title: "Event"
  *         description: "Event description"
@@ -496,6 +519,7 @@ eventsRouter.post(
  *         categoryName: "Tech"
  *         ticketType: "Free"
  *         ticketPrice: 0
+ *         ticketID: "e96fdfc5-acbb-4bd7-a728-44bb77fb4e3f"
  *     NotFoundErrorResponse:
  *       type: object
  *       properties:
