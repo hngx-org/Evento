@@ -112,7 +112,7 @@ const getUserProfileById = async (
       throw new NotFoundError("User not found");
     }
 
-    const requestingUserId = req.params.id; // Assuming you have a user object in the request
+    const requestingUserId = req.params.id;
     if (requestingUserId !== user.userID) {
       throw new UnauthorizedError(
         "You do not have permission to view this profile"
