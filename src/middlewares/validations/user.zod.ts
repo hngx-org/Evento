@@ -4,23 +4,12 @@ import { RequestHandler } from "express";
 import { z } from "zod";
 
 // Define shared schemas
-const uuidSchema = z
-  .string()
-  .refine(
-    (value) =>
-      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
-        value
-      ),
-    {
-      message: "Invalid UUID format",
-    }
-  );
-
+const uuidSchema = z.string().uuid();
 const socialLinksSchema = z.object({
-  websiteURL: z.string().optional(),
-  twitterURL: z.string().optional(),
-  facebookURL: z.string().optional(),
-  instagramURL: z.string().optional(),
+  websiteURL: z.string().url().optional(),
+  twitterURL: z.string().url().optional(),
+  facebookURL: z.string().url().optional(),
+  instagramURL: z.string().url().optional(),
 });
 
 const preferencesSchema = z.object({
@@ -50,6 +39,7 @@ const updateUserProfileByIdSchema = z.object({
     displayName: z.string().optional(),
     bio: z.string().optional(),
     location: z.string().optional(),
+    websiteURL: z.string().url().optional(),
   }),
 });
 
@@ -84,7 +74,7 @@ const updateContactInformationByUserIdSchema = z.object({
     id: uuidSchema,
   }),
   body: z.object({
-    email: z.string().optional(),
+    email: z.string().email().optional(),
   }),
 });
 
