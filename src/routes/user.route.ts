@@ -16,6 +16,24 @@ import {
   deleteUserCoverImage,
 } from "./../controllers/user.controller";
 
+import {
+  getUserProfileByIdSchema,
+  updateUserProfileByIdSchema,
+  addSocialLinksSchema,
+  getSocialLinksByUserIdSchema,
+  uploadProfileImageSchema,
+  updateContactInformationByUserIdSchema,
+  updateUserPreferencesSchema,
+  deleteUserSchema,
+  updateUserPasswordSchema,
+  confirmPasswordChangeSchema,
+  deleteUserProfileImageSchema,
+  uploadProfileCoverImageSchema,
+  deleteUserCoverImageSchema,
+} from "./../middlewares/validations/user.zod";
+
+import { validationMiddleware } from "./../middlewares/validationMiddleware";
+
 const router: Router = express.Router();
 
 const storage = multer.memoryStorage();
@@ -190,9 +208,17 @@ const uploadHandler = (req: Request, res: Response, next: NextFunction) => {
  *             schema:
  *               $ref: '#/components/schemas/UserProfileResponse'
  */
-router.get("/user/:id", getUserProfileById);
+router.get(
+  "/user/:id",
+  validationMiddleware(getUserProfileByIdSchema),
+  getUserProfileById
+);
 
-router.patch("/user/:id", updateUserProfileById);
+router.patch(
+  "/user/:id",
+  validationMiddleware(updateUserProfileByIdSchema),
+  updateUserProfileById
+);
 
 /**
  * @swagger
@@ -225,7 +251,11 @@ router.patch("/user/:id", updateUserProfileById);
  *             schema:
  *               type: string
  */
-router.post("/user/:id/social", addSocialLinks);
+router.post(
+  "/user/:id/social",
+  validationMiddleware(addSocialLinksSchema),
+  addSocialLinks
+);
 
 /**
  * @swagger
@@ -251,7 +281,11 @@ router.post("/user/:id/social", addSocialLinks);
  *             schema:
  *               type: string
  */
-router.get("/user/:id/social", getSocialLinksByUserId);
+router.get(
+  "/user/:id/social",
+  validationMiddleware(getSocialLinksByUserIdSchema),
+  getSocialLinksByUserId
+);
 
 /**
  * @swagger
@@ -301,7 +335,12 @@ router.get("/user/:id/social", getSocialLinksByUserId);
  *         '500':
  *           description: Internal Server Error. An error occurred while processing the request.
  */
-router.post("/user/:id/image", uploadHandler, uploadProfileImage);
+router.post(
+  "/user/:id/image",
+  validationMiddleware(uploadProfileImageSchema),
+  uploadHandler,
+  uploadProfileImage
+);
 
 /**
  * @swagger
@@ -334,7 +373,11 @@ router.post("/user/:id/image", uploadHandler, uploadProfileImage);
  *             schema:
  *               type: string
  */
-router.post("/user/:id/preferences", updateUserPreferences);
+router.post(
+  "/user/:id/preferences",
+  validationMiddleware(updateUserPreferencesSchema),
+  updateUserPreferences
+);
 
 /**
  * @swagger
@@ -360,7 +403,7 @@ router.post("/user/:id/preferences", updateUserPreferences);
  *             schema:
  *               type: string
  */
-router.delete("/user/:id", deleteUser);
+router.delete("/user/:id", validationMiddleware(deleteUserSchema), deleteUser);
 
 /**
  * @swagger
@@ -393,7 +436,11 @@ router.delete("/user/:id", deleteUser);
  *             schema:
  *               type: string
  */
-router.patch("/user/:id/password", updateUserPassword);
+router.patch(
+  "/user/:id/password",
+  validationMiddleware(updateUserPasswordSchema),
+  updateUserPassword
+);
 
 /**
  * @swagger
@@ -419,7 +466,11 @@ router.patch("/user/:id/password", updateUserPassword);
  *             schema:
  *               type: string
  */
-router.delete("/user/:id/image", deleteUserProfileImage);
+router.delete(
+  "/user/:id/image",
+  validationMiddleware(deleteUserProfileImageSchema),
+  deleteUserProfileImage
+);
 
 /**
  * @swagger
@@ -469,7 +520,12 @@ router.delete("/user/:id/image", deleteUserProfileImage);
  *         '500':
  *           description: Internal Server Error. An error occurred while processing the request.
  */
-router.post("/user/:id/cover", uploadHandler, uploadProfileCoverImage);
+router.post(
+  "/user/:id/cover",
+  validationMiddleware(uploadProfileCoverImageSchema),
+  uploadHandler,
+  uploadProfileCoverImage
+);
 
 /**
  * @swagger
@@ -496,6 +552,10 @@ router.post("/user/:id/cover", uploadHandler, uploadProfileCoverImage);
  *               type: string
  */
 
-router.delete("/user/:id/cover", deleteUserCoverImage);
+router.delete(
+  "/user/:id/cover",
+  validationMiddleware(deleteUserCoverImageSchema),
+  deleteUserCoverImage
+);
 
 module.exports = router;

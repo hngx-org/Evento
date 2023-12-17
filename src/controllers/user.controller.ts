@@ -19,8 +19,15 @@ import jwt from "jsonwebtoken";
 // Assuming you have a secret for JWT signing
 const jwtSecret = process.env.JWT_SECRET;
 
+if (!jwtSecret) {
+  throw new InternalServerError("JWT secret is not defined");
+}
+
 // Generate a JWT token for confirmation link
-const generateConfirmationToken = (userID, hashedNewPassword) => {
+const generateConfirmationToken = (
+  userID: string,
+  hashedNewPassword: string
+) => {
   const token = jwt.sign({ userID, hashedNewPassword }, jwtSecret, {
     expiresIn: "1h",
   });
@@ -65,10 +72,12 @@ import {
   uploadCoverImageService,
 } from "../services/profileimage";
 import { cloudinaryService, deleteImage } from "../services/imageupload";
+import { V4Options } from "uuid";
+import { JwtPayload } from "jsonwebtoken";
 
 // validate id
 const validateId = (id: string): string | null => {
-  return uuidv4(id);
+  return uuidv4({ value: id } as V4Options).toString();
 };
 
 // get user profile by id
@@ -112,7 +121,7 @@ const getUserProfileById = async (
       throw new NotFoundError("User not found");
     }
 
-    const requestingUserId = req.params.id; // Assuming you have a user object in the request
+    const requestingUserId = req.params.id;
     if (requestingUserId !== user.userID) {
       throw new UnauthorizedError(
         "You do not have permission to view this profile"
@@ -731,13 +740,13 @@ const confirmPasswordChange = async (
 
   try {
     // Verify the token
-    const decodedToken = jwt.verify(token, jwtSecret);
+    const decodedToken = jwt.verify(token as string, jwtSecret as string);
 
     if (!decodedToken) {
       throw new BadRequestError("Invalid token");
     }
 
-    const { userID, hashedNewPassword } = decodedToken;
+    const { userID, hashedNewPassword } = decodedToken as JwtPayload;
 
     //   check if the token hasnt expired
     const tokenExists = await prisma.verification.findUnique({
@@ -829,10 +838,10 @@ const deleteUserProfileImage = async (
       throw new NotFoundError("User not found");
     }
 
-    // call the cloudinary service to delete the image
-    await deleteImage(validUser.profileImage);
-
-    if (!validUser.profileImage) {
+    if (validUser.profileImage) {
+      // call the cloudinary service to delete the image
+      await deleteImage(validUser.profileImage);
+    } else {
       throw new BadRequestError("User does not have a profile image");
     }
 
@@ -881,10 +890,10 @@ const deleteUserCoverImage = async (
       throw new NotFoundError("User not found");
     }
 
-    // call the cloudinary service to delete the image
-    await deleteImage(validUser.coverImage);
-
-    if (!validUser.coverImage) {
+    if (validUser.coverImage) {
+      // call the cloudinary service to delete the image
+      await deleteImage(validUser.coverImage);
+    } else {
       throw new BadRequestError("User does not have a cover image");
     }
 
