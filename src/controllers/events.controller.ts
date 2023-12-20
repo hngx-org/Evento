@@ -8,7 +8,7 @@ import { BadRequestError, NotFoundError, ConflictError } from "../middlewares";
 import { ResponseHandler } from "../utils";
 import { cloudinary } from "../services/events.service";
 import { unlink } from "node:fs";
-import { slugify } from "../services/slugify";
+import { eventSlugify } from "../services/slugify";
 
 const { event, ticket } = new PrismaClient();
 
@@ -77,7 +77,7 @@ const createEventController: RequestHandler = async (req, res, next) => {
     // Check if there is an existing event with the same title as in the request title payload
     const existingEvent = await event.findFirst({
       where: {
-        title,
+        eventSlug: await eventSlugify(title),
       },
     });
 
@@ -97,7 +97,7 @@ const createEventController: RequestHandler = async (req, res, next) => {
         locationType,
         location,
         virtualLocationLink,
-        eventSlug: await slugify(title),
+        eventSlug: await eventSlugify(title),
         capacity,
         organizer: {
           connect: {
