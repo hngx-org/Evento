@@ -67,6 +67,7 @@
     "pg": "^8.11.3",
     "pg-listen": "^1.7.0",
     "ping": "^0.4.4",
+    "slugify": "^1.6.6",
     "socket.io": "^4.7.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",

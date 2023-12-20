@@ -1,6 +1,7 @@
+import "dotenv/config";
 import { v2 as cloudinary } from "cloudinary";
 import multer from "multer";
-import "dotenv/config";
+import slugify from "slugify";
 
 // Destructure the environment variables
 const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
@@ -25,4 +26,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-export { cloudinary, upload };
+// Generate unique slug
+const generateUniqueSlug = (title: string, existingSlugs: string[]): string => {
+  const baseSlug = slugify(title, { lower: true, replacement: "-" });
+  let uniqueSlug = baseSlug;
+
+  let counter = 1;
+  while (existingSlugs.includes(uniqueSlug)) {
+    uniqueSlug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
+  return uniqueSlug;
+};
+
+export { cloudinary, upload, generateUniqueSlug };

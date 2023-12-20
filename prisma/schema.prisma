@@ -44,6 +44,7 @@ model User {
 
 model Event {
     eventID              String                 @id @unique @default(uuid())
+    eventSlug            String                 @unique @default("")
     title                String
     description          String?
     imageURL             String?

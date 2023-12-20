@@ -8,7 +8,7 @@ import { BadRequestError, NotFoundError, ConflictError } from "../middlewares";
 import { ResponseHandler } from "../utils";
 import { cloudinary } from "../services/events.service";
 import { unlink } from "node:fs";
-import { eventSlugify } from "../services/slugify";
+import { generateUniqueSlug } from "../services/events.service";
 
 const { event, ticket } = new PrismaClient();
 
@@ -16,7 +16,7 @@ const { event, ticket } = new PrismaClient();
 const uploadEventImageController: RequestHandler = async (req, res, next) => {
   try {
     // Destructure the image file from the request body
-    const { path } = req.file;
+    const { path } = req.file as Express.Multer.File;
 
     // Check if the image file is not present in the request body
     if (!path) {
@@ -74,22 +74,19 @@ const createEventController: RequestHandler = async (req, res, next) => {
       ticketPrice,
     } = req.body as createEventsInterface;
 
-    // Check if there is an existing event with the same title as in the request title payload
-    const existingEvent = await event.findFirst({
-      where: {
-        eventSlug: await eventSlugify(title),
-      },
-    });
+    // Get existing slugs
+    const allSlugs = await event
+      .findMany({})
+      .then((events) => events.map((event) => event.eventSlug));
 
-    // If there is an existing event with the same title, throw an error
-    if (existingEvent) {
-      throw new BadRequestError("An event with this title already exists.");
-    }
+    // Generate a unique slug
+    const eventSlug = generateUniqueSlug(title, allSlugs);
 
     // Create an event
     const newEvent = await event.create({
       data: {
         title,
+        eventSlug,
         description,
         imageURL,
         startDate,
@@ -262,12 +259,22 @@ const editEventController: RequestHandler = async (req, res, next) => {
       categoryName,
       ticketType,
       ticketPrice,
+      ticketID,
     } = req.body as editEventsInterface;
+
+    // Get existing slugs
+    const allSlugs = await event
+      .findMany({})
+      .then((events) => events.map((event) => event.eventSlug));
+
+    // Generate a unique slug
+    const eventSlug = generateUniqueSlug(title, allSlugs);
 
     // Update the event
     const updatedEvent = await event.update({
       where: { eventID },
       data: {
+        eventSlug,
         title,
         description,
         startDate,
@@ -286,12 +293,31 @@ const editEventController: RequestHandler = async (req, res, next) => {
             },
           },
         },
+        tickets: {
+          update: {
+            where: {
+              ticketID,
+            },
+            data: {
+              ticketType,
+              ticketPrice,
+            },
+          },
+        },
       },
       select: {
         eventID: true,
+        eventSlug: true,
         title: true,
         description: true,
         Category: true,
+        tickets: {
+          select: {
+            ticketID: true,
+            ticketType: true,
+            ticketPrice: true,
+          },
+        },
       },
     });
 

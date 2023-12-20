@@ -10,11 +10,13 @@ interface createEventsInterface {
   virtualLocationLink?: string;
   capacity: number;
   organizerID: string;
-  categoryName?: string;
+  categoryName: string;
   ticketType: string;
   ticketPrice?: number;
 }
 
-interface editEventsInterface extends createEventsInterface {}
+interface editEventsInterface extends createEventsInterface {
+  ticketID: string;
+}
 
 export { createEventsInterface, editEventsInterface };
