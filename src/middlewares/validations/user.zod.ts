@@ -63,9 +63,6 @@ const uploadProfileImageSchema = z.object({
   params: z.object({
     id: uuidSchema,
   }),
-  body: z.object({
-    service: z.string(),
-  }),
 });
 
 // updateContactInformationByUserId
