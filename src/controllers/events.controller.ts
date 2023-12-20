@@ -8,6 +8,7 @@ import { BadRequestError, NotFoundError, ConflictError } from "../middlewares";
 import { ResponseHandler } from "../utils";
 import { cloudinary } from "../services/events.service";
 import { unlink } from "node:fs";
+import { slugify } from "../services/slugify";
 
 const { event, ticket } = new PrismaClient();
 
@@ -96,12 +97,14 @@ const createEventController: RequestHandler = async (req, res, next) => {
         locationType,
         location,
         virtualLocationLink,
+        eventSlug: await slugify(title),
         capacity,
         organizer: {
           connect: {
             userID: organizerID,
           },
         },
+
         Category: {
           connectOrCreate: {
             where: {
