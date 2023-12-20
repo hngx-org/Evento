@@ -54,7 +54,6 @@ model Event {
     location             String?
     virtualLocationLink  String?
     capacity             Int
-    eventSlug            String                 @unique
     organizerID          String
     categoryCategoryID   String?
     Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])

@@ -94,7 +94,6 @@ const createEventController: RequestHandler = async (req, res, next) => {
         locationType,
         location,
         virtualLocationLink,
-        eventSlug: await eventSlugify(title),
         capacity,
         organizer: {
           connect: {
