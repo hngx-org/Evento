@@ -10,6 +10,14 @@ import {
 } from "../controllers/events.controller";
 import { upload } from "../services/events.service";
 import { authenticateJWT } from "../middlewares";
+// Validation schema imports
+import {
+  eventIdSchema,
+  createEventSchema,
+  updateEventSchema,
+  registerForEventSchema,
+} from "../middlewares/validations/events.zod";
+import { validationMiddleware } from "../middlewares/validationMiddleware";
 
 const eventsRouter = Router();
 
@@ -21,24 +29,44 @@ eventsRouter.post(
 );
 
 // Create a new event route
-eventsRouter.post("/events", authenticateJWT, createEventController);
+eventsRouter.post(
+  "/events",
+  authenticateJWT,
+  validationMiddleware(createEventSchema),
+  createEventController
+);
 
 // Get a single event route
-eventsRouter.get("/events/:eventID", getEventController);
+eventsRouter.get(
+  "/events/:eventID",
+  validationMiddleware(eventIdSchema),
+  getEventController
+);
 
 // Get all events route
 eventsRouter.get("/events", getAllEventsController);
 
 // Edit an event route
-eventsRouter.put("/events/:eventID", authenticateJWT, editEventController);
+eventsRouter.put(
+  "/events/:eventID",
+  authenticateJWT,
+  validationMiddleware(updateEventSchema),
+  editEventController
+);
 
 // Delete an event route
-eventsRouter.delete("/events/:eventID", authenticateJWT, deleteEventController);
+eventsRouter.delete(
+  "/events/:eventID",
+  authenticateJWT,
+  validationMiddleware(eventIdSchema),
+  deleteEventController
+);
 
 // Register for an event route
 eventsRouter.post(
   "/events/registration",
   authenticateJWT,
+  validationMiddleware(registerForEventSchema),
   registerForEventController
 );
 
@@ -104,7 +132,7 @@ eventsRouter.post(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/EventRequest'
+ *             $ref: '#/components/schemas/CreateEventRequest'
  *     responses:
  *       '201':
  *         description: The event was successfully created
@@ -176,7 +204,7 @@ eventsRouter.post(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/EventRequest'
+ *             $ref: '#/components/schemas/UpdateEventRequest'
  *     responses:
  *       '200':
  *         description: The event was successfully updated
@@ -375,6 +403,8 @@ eventsRouter.post(
  *                 type: number
  *               title:
  *                 type: string
+ *               eventSlug:
+ *                 type: string
  *               description:
  *                 type: string
  *               imageURL:
@@ -412,6 +442,7 @@ eventsRouter.post(
  *         data:
  *           - eventID: 1
  *             title: "Event"
+ *             eventSlug: "event"
  *             description: "Event description"
  *             imageURL: "https://example.com/image.jpg"
  *             startDate: "2021-01-01"
@@ -436,7 +467,7 @@ eventsRouter.post(
  *                 ticketType: "Free"
  *                 ticketPrice: 0
  *         message: "Sample success message"
- *     EventRequest:
+ *     CreateEventRequest:
  *       type: object
  *       properties:
  *         title:
@@ -496,6 +527,19 @@ eventsRouter.post(
  *         categoryName: "Tech"
  *         ticketType: "Free"
  *         ticketPrice: 0
+ *     UpdateEventRequest:
+ *       allOf:
+ *         - $ref: "#/components/schemas/CreateEventRequest"
+ *         - type: object
+ *           properties:
+ *             ticketID:
+ *               type: string
+ *               format: uuid
+ *               description: The ID of the ticket to be updated
+ *           required:
+ *             - ticketID
+ *           example:
+ *             ticketID: "123e4567-e89b-12d3-a456-426614174001"
  *     NotFoundErrorResponse:
  *       type: object
  *       properties:

@@ -44,6 +44,7 @@ model User {
 
 model Event {
     eventID              String                 @id @unique @default(uuid())
+    eventSlug            String                 @unique @default("")
     title                String
     description          String?
     imageURL             String?
@@ -53,7 +54,6 @@ model Event {
     location             String?
     virtualLocationLink  String?
     capacity             Int
-    eventSlug            String                 @unique
     organizerID          String
     categoryCategoryID   String?
     Category             Category?              @relation(fields: [categoryCategoryID], references: [categoryID])
