@@ -215,36 +215,33 @@ async function loginUser(req: Request, user: any) {
   });
 }
 
-
-const  sendSignUpVerificationEmail = async(user: any) => {
+const sendSignUpVerificationEmail = async (user: any) => {
   try {
     //if user is already verified
-  
-    
+
     const confirmationToken = generateConfirmationToken(user.userID);
-  
-      //   if token exists, delete it
-      await prisma.verification.upsert(
-      {
-        where: { userID: user.userID },
-        update: {
-          verificationCode: confirmationToken,
-          status: "pending",
-        },
-        create: {
-          userID: user.userID,
-          verificationCode: confirmationToken,
-          status: "pending",
-        },
-      });
-      
-      const mailedToken = `https://evento-qo6d.onrender.com/api/v1/verify?token=${confirmationToken}`;
-  
+
+    //   if token exists, delete it
+    await prisma.verification.upsert({
+      where: { userID: user.userID },
+      update: {
+        verificationCode: confirmationToken,
+        status: "pending",
+      },
+      create: {
+        userID: user.userID,
+        verificationCode: confirmationToken,
+        status: "pending",
+      },
+    });
+
+    const mailedToken = `https://evento-qo6d.onrender.com/api/v1/verify?token=${confirmationToken}`;
+
     const emailVariables = {
       userName: user.firstName,
       verificationLink: mailedToken,
     };
-  
+
     emailService(
       {
         to: user.email,
@@ -253,16 +250,16 @@ const  sendSignUpVerificationEmail = async(user: any) => {
       },
       signUpVerificationEmailPath
     );
-
-    
-
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-  
-}
+};
 
-export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { token } = req.query;
 
@@ -313,13 +310,13 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
     if (tokenExists) {
       // Delete the verification token
       await prisma.verification.delete({
-        where: { userID }
+        where: { userID },
       });
     }
 
     //   send password updated email
     const emailVariables = {
-      userName: updatedUser.firstName
+      userName: updatedUser.firstName,
     };
 
     const emailStatus = await emailService(
@@ -336,7 +333,7 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
         "Error sending password change confirmation email"
       );
     }
-    res.redirect('https://evento1.vercel.app/dashboard');
+    res.redirect("https://evento1.vercel.app/dashboard");
     // return ResponseHandler.success(
     //   res,
     //   updatedUser,
@@ -348,7 +345,11 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const sendSignUpVerification = async (req: Request, res: Response, next: NextFunction) => {
+export const sendSignUpVerification = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { userID } = req.params;
 
@@ -372,7 +373,7 @@ export const sendSignUpVerification = async (req: Request, res: Response, next: 
   } catch (error) {
     return next(error);
   }
-}
+};
 
 export function generateToken(user: any): string {
   const userWithoutPassword = {
@@ -744,8 +745,6 @@ export const resetPassword = async (
       where: { userID: validUser.userID },
     });
 
-
-
     if (tokenExists) {
       const tokenExists = await prisma.verification.delete({
         where: { userID: validUser.userID },
@@ -761,7 +760,7 @@ export const resetPassword = async (
       },
     });
 
-    const mailedToken = `https://evento-qo6d.onrender.com/api/v1/reset-password/confirm?token=${confirmationToken}`;
+    const mailedToken = `https://evento-qo6d.onrender.com/api/v1/reset-password?token=${confirmationToken}`;
 
     // Send the confirmation email
     const emailVariables = {
@@ -801,7 +800,7 @@ const isPasswordTokenExpired = (creationTime: Date): boolean => {
   return new Date() > expirationTime;
 };
 
-// confirm password change
+// confirm User Exists
 export const confirmUserExists = async (
   req: Request,
   res: Response,
