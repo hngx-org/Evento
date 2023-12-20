@@ -152,7 +152,7 @@ export const login = async (
         id: user.userID,
       };
       const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "3 days",
       });
       if (err) {
         return next(err);
