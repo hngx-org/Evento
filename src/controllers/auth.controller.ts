@@ -167,6 +167,93 @@ export const login = async (
   })(req, res, next);
 };
 
+
+export const signWithGoogle: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, name, image } = req.body;
+    const requiredFields = ["email", "name"];
+    
+
+    const fieldDisplayNames = {
+      email: "Email",
+      name: "Name",
+    };
+
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      const errorMessage =
+        missingFields.length === 1
+          ? `${fieldDisplayNames[missingFields[0]]} is required`
+          : `${missingFields
+              .map((field) => fieldDisplayNames[field])
+              .join(", ")} are required`;
+
+      throw new BadRequestError(errorMessage);
+    }
+
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+      select: {
+        userID: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        isVerified: true,
+        slug: true,
+      },
+    });
+
+    if (user) {
+      return ResponseHandler.success(
+        res,
+        user,
+        200,
+        "User retrieved successfully"
+      );
+    }
+
+    const firstName = name.split(" ")[0];
+    const lastName = name.split(" ")[1] || "";
+    const createdUser = await prisma.user.create({
+      data: {
+        email,
+        password: "",
+        firstName,
+        lastName,
+        slug: await slugify(`${firstName} ${lastName}`),
+      },
+    });
+
+    //send confirmation email
+
+    sendSignUpVerificationEmail(createdUser);
+
+    const userWithoutPassword = {
+      email: createdUser.email,
+      firstName: createdUser.firstName,
+      lastName: createdUser.lastName,
+      slug: createdUser.slug,
+    };
+
+    return ResponseHandler.success(
+      res,
+      userWithoutPassword,
+      201,
+      "User created successfully: proceed with verification"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const google = async (
   req: Request,
   res: Response,

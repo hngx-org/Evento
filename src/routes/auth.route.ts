@@ -13,7 +13,8 @@ import {
   updateUserPassword,
   generateToken,
   sendSignUpVerification,
-  verifyUser
+  verifyUser,
+  signWithGoogle
 } from "../controllers/auth.controller";
 
 import { confirmPasswordChange } from "../controllers/user.controller";
@@ -133,9 +134,7 @@ router.post("/register", register);
  */
 router.post("/login", login);
 
-router.get("/login", (req, res) => {
-  res.send("Login page");
-});
+router.post("/login/google", signWithGoogle);
 
 /**
  * @swagger
