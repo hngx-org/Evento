@@ -114,6 +114,7 @@ const getUserProfileById = async (
         role: true,
         location: true,
         coverImage: true,
+        isVerified: true,
       },
     });
 
