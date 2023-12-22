@@ -212,9 +212,11 @@ export const signWithGoogle: RequestHandler = async (
     });
 
     if (user) {
+      const token = generateToken(user);
+
       return ResponseHandler.success(
         res,
-        user,
+        {user, token},
         200,
         "User retrieved successfully"
       );
@@ -232,6 +234,7 @@ export const signWithGoogle: RequestHandler = async (
       },
     });
 
+    const token = generateToken(createdUser);
     //send confirmation email
 
     sendSignUpVerificationEmail(createdUser);
@@ -245,7 +248,7 @@ export const signWithGoogle: RequestHandler = async (
 
     return ResponseHandler.success(
       res,
-      userWithoutPassword,
+      {userWithoutPassword, token},
       201,
       "User created successfully: proceed with verification"
     );
