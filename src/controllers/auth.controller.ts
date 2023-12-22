@@ -240,6 +240,7 @@ export const signWithGoogle: RequestHandler = async (
     sendSignUpVerificationEmail(createdUser);
 
     const userWithoutPassword = {
+      userID: createdUser.userID,
       email: createdUser.email,
       firstName: createdUser.firstName,
       lastName: createdUser.lastName,
