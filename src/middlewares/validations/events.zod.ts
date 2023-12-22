@@ -63,8 +63,9 @@ export const createEventSchema = z.object({
       .string({
         invalid_type_error: "Location must be a string.",
       })
-      .min(5, { message: "Location must be at least 5 characters long." })
-      .optional(),
+      .refine((value) => value === "" || value.trim().length >= 5, {
+        message: "Location must be at least 5 characters long.",
+      }),
     virtualLocationLink: z
       .string({
         required_error: "Please provide a virtual location link for the event.",
