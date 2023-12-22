@@ -380,11 +380,24 @@ const registerForEventController: RequestHandler = async (req, res, next) => {
       where: {
         eventID,
       },
+      include: {
+        participants: true,
+      },
     });
 
     // If the event does not exist, throw an error
     if (!existingEvent) {
       throw new NotFoundError("Event not found.");
+    }
+
+    //   check if the event has past the start date
+    if (existingEvent.startDate < new Date()) {
+      throw new BadRequestError("Cannot register for a past event.");
+    }
+
+    //   check if the event has reached capacity
+    if (existingEvent.capacity <= existingEvent.participants.length) {
+      throw new BadRequestError("Event has reached capacity.");
     }
 
     // Check if the user is already registered for the event
