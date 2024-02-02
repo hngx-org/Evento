@@ -463,6 +463,36 @@ const registerForEventController: RequestHandler = async (req, res, next) => {
   }
 };
 
+// mass delete event
+const deleteEventsController: RequestHandler = async (req, res, next) => {
+  try {
+    const { eventIDs } = req.body as { eventIDs: string[] };
+
+    // Delete related tickets first
+    await ticket.deleteMany({
+      where: {
+        eventID: { in: eventIDs },
+      },
+    });
+
+    // Once tickets are deleted, proceed to delete events
+    const deletedEvents = await event.deleteMany({
+      where: {
+        eventID: { in: eventIDs },
+      },
+    });
+
+    ResponseHandler.success(
+      res,
+      deletedEvents,
+      200,
+      "Events and related tickets deleted successfully."
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   uploadEventImageController,
   createEventController,
@@ -471,4 +501,5 @@ export {
   editEventController,
   deleteEventController,
   registerForEventController,
+  deleteEventsController,
 };

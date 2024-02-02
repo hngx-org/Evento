@@ -7,6 +7,7 @@ import {
   editEventController,
   deleteEventController,
   registerForEventController,
+  deleteEventsController,
 } from "../controllers/events.controller";
 import { upload } from "../services/events.service";
 import { authenticateJWT } from "../middlewares";
@@ -69,6 +70,8 @@ eventsRouter.post(
   validationMiddleware(registerForEventSchema),
   registerForEventController
 );
+
+eventsRouter.post("/events/delete", deleteEventsController);
 
 /**
  * @swagger
