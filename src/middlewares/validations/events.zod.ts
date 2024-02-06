@@ -32,7 +32,7 @@ export const createEventSchema = z.object({
         invalid_type_error: "Description must be a string.",
       })
       .min(5, { message: "Description must be at least 5 characters long." })
-      .max(500, { message: "Description must be at most 500 characters long." })
+      .max(3000, { message: "Description must be at most 3000 characters long." })
       .trim(),
     imageURL: z
       .string({
